@@ -860,7 +860,7 @@ function selectDate(dateStr) {
 
 function taskJiraId(task) {
   return (task.issueData && (task.issueData.key || task.issueData.issueKey)) ||
-         task.issueKey || task.externalId || null;
+         task.issueKey || task.externalId || task.issueId || null;
 }
 
 function searchTasks(q) {
