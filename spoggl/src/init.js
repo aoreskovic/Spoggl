@@ -333,6 +333,8 @@ async function init() {
   });
   document.getElementById('pin-search-input').addEventListener('input', function(e) { renderPinSearch(e.target.value); });
 
+  document.getElementById('schedule-grid').addEventListener('click', onScheduleGridClick);
+
   // ── Register SP hooks (must run after PluginAPI is available) ──
   try {
     PluginAPI.registerHook(PluginAPI.Hooks.PERSISTED_DATA_CHANGED, async function() {

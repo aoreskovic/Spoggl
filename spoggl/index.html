@@ -13,7 +13,6 @@ body {
   font-size: 14px;
 }
 
-/* ── Dark theme ── */
 html.dark {
   --bg: #1e1e2e; --bg-darker: #181825; --card-bg: #252535;
   --text-color: #cdd6f4; --text-color-muted: #8895b0;
@@ -35,7 +34,6 @@ html.dark .sched-entry-block.st-synced .sched-handle::after { background: #a6e3a
 html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba8; }
 .hidden { display: none !important; }
 
-/* ── Two-panel layout ── */
 .app-layout { display: flex; height: 100vh; min-height: 0; overflow: hidden; }
 
 .left-panel {
@@ -52,7 +50,6 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
   position: relative;
 }
 
-/* ── Omnibar ── */
 .omnibar {
   background: var(--card-bg, #fff);
   border: 1px solid var(--divider-color, #e0e0e0);
@@ -112,7 +109,6 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
   background: #f44336 !important; border-color: #f44336 !important; color: #fff !important;
 }
 
-/* ── Status bar ── */
 .status-bar {
   display: flex; align-items: center; gap: 8px; padding: 6px 12px;
   background: var(--bg-darker, #f5f5f5);
@@ -122,7 +118,6 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
 }
 .status-bar label { color: var(--text-color-muted, #757575); white-space: nowrap; }
 
-/* ── Day header ── */
 .day-header {
   display: flex; align-items: center; justify-content: space-between;
   flex-wrap: wrap; gap: 8px;
@@ -140,7 +135,6 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
 .day-header-right { display: flex; align-items: center; gap: 8px; }
 .total-display { font-weight: 700; font-size: 15px; color: var(--c-primary, #7b2ff7); white-space: nowrap; }
 
-/* ── Pins bar ── */
 .pins-bar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-height: 32px; }
 .pins-label {
   font-size: 11px; font-weight: 600;
@@ -166,7 +160,7 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
   color: #757575; font-size: 11px;
 }
 .add-pin-btn:hover { border-color: var(--c-primary, #7b2ff7); color: var(--c-primary, #7b2ff7); }
-/* Stacked pin layout */
+
 .pins-bar.stacked { flex-direction: column; align-items: stretch; gap: 3px; }
 .pin-row {
   display: flex; align-items: center; gap: 6px;
@@ -181,7 +175,6 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
 .pin-row-jira { font-weight: 700; font-size: 11px; flex-shrink: 0; color: var(--c-primary, #7b2ff7); }
 .pin-row.active .pin-row-jira { color: #fff; }
 
-/* ── Timeline (entry list) ── */
 .timeline-empty { text-align: center; color: #757575; padding: 24px 0; font-size: 13px; }
 .entry-card {
   background: var(--card-bg, #fff);
@@ -216,7 +209,6 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
 .icon-btn.del:hover { color: #f44336; }
 .entry-err-row { width: 100%; font-size: 11px; color: #f44336; padding: 1px 2px; }
 
-/* ── Today & Inbox task list (below timeline) ── */
 .today-tasks {
   background: var(--card-bg, #fff);
   border: 1px solid var(--divider-color, #e0e0e0);
@@ -263,7 +255,6 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
 .tt-play { font-size: 9px; color: var(--c-primary, #7b2ff7); flex-shrink: 0; opacity: .5; }
 .today-task-item:hover .tt-play { opacity: 1; }
 
-/* ── Schedule panel (right) ── */
 .sched-hdr {
   padding: 8px 10px;
   font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
@@ -333,14 +324,12 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
 .sched-entry-block.st-synced .sched-handle::after { background: #4caf50; }
 .sched-entry-block.st-error  .sched-handle::after { background: #f44336; }
 
-/* ── Panel resize handle ── */
 .sched-resize-handle {
   position: absolute; left: -4px; top: 0; bottom: 0; width: 8px;
   cursor: col-resize; z-index: 50; border-radius: 4px;
 }
 .sched-resize-handle:hover, .sched-resize-handle.resizing { background: rgba(123,47,247,.35); }
 
-/* ── Schedule zoom bar ── */
 .sched-hdr { display: flex; align-items: center; justify-content: space-between; }
 .sched-zoom { display: flex; align-items: center; gap: 4px; }
 .sched-zoom-btn {
@@ -352,7 +341,6 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
 .sched-zoom-btn:hover { border-color: var(--c-primary, #7b2ff7); color: var(--c-primary, #7b2ff7); }
 .sched-zoom-lbl { font-size: 10px; color: var(--text-color-muted, #616161); min-width: 26px; text-align: center; }
 
-/* ── Context menu ── */
 .ctx-menu {
   position: fixed; z-index: 2000;
   background: var(--card-bg, #fff);
@@ -368,7 +356,28 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
 .ctx-item:hover { background: var(--bg-darker, #f5f5f5); }
 .ctx-item.danger { color: #e53935; }
 
-/* ── Settings panel improvements ── */
+.sched-quick-entry {
+  position: fixed; z-index: 3000;
+  background: var(--card-bg, #fff);
+  border: 1.5px solid var(--c-primary, #7b2ff7);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.25);
+  padding: 10px; width: 240px;
+}
+.sched-quick-entry-time {
+  font-size: 11px; font-weight: 700; font-family: monospace;
+  color: var(--c-primary, #7b2ff7); margin-bottom: 6px;
+}
+.sched-quick-entry input {
+  width: 100%; background: var(--bg, #fff);
+  border: 1px solid var(--divider-color, #e0e0e0);
+  border-radius: 4px; padding: 6px 8px;
+  color: var(--text-color, #212121);
+  font-family: inherit; font-size: 13px;
+}
+.sched-quick-entry input:focus { outline: none; border-color: var(--c-primary, #7b2ff7); }
+.sched-quick-entry-results { max-height: 160px; overflow-y: auto; margin-top: 4px; }
+
 .settings-section { margin-bottom: 20px; }
 .settings-section-title {
   font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px;
@@ -390,7 +399,6 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
   color: var(--text-color, #212121); font-family: inherit; font-size: 13px;
 }
 
-/* ── Overlays ── */
 .overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,.45);
   z-index: 500; display: flex; align-items: flex-start; justify-content: center;
@@ -418,7 +426,6 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
 .row-btns { display: flex; gap: 8px; margin-top: 16px; }
 .pin-results { max-height: 220px; overflow-y: auto; margin-top: 8px; }
 
-/* ── Debug panel ── */
 .dbg-panel {
   font-family: 'Consolas', 'Courier New', monospace;
   font-size: 11px;
@@ -644,9 +651,7 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
   </div>
 </div>
 
-<script>// ─────────────────────────────────────────
-// UTILS
-// ─────────────────────────────────────────
+<script>
 
 function uuid() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
@@ -732,10 +737,6 @@ function esc(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-// ─────────────────────────────────────────
-// DEBUG
-// ─────────────────────────────────────────
-
 var _dbgEntries = [];
 var _dbgOpen    = true;
 
@@ -748,7 +749,7 @@ function dbg(msg, type) {
 
   var log = document.getElementById('dbg-log');
   if (log) {
-    // Remove placeholder if present
+
     var empty = log.querySelector('.dbg-empty');
     if (empty) log.removeChild(empty);
 
@@ -778,7 +779,7 @@ function _dbgDumpState() {
   if (allTasks.length > 0) {
     dbg('first task: ' + allTasks[0].title + ' | projectId:' + allTasks[0].projectId + ' | dueDay:' + allTasks[0].dueDay + ' | tagIds:' + JSON.stringify(allTasks[0].tagIds), 'state');
   }
-  // Dump PluginAPI surface so we know what's available
+
   try {
     var api = window.PluginAPI;
     var methods = Object.getOwnPropertyNames(api).filter(function(k) { return typeof api[k] === 'function'; });
@@ -808,10 +809,8 @@ function _dbgCopyFallback(text) {
   document.body.removeChild(ta);
 }
 
-// Confirm script is running immediately
 dbg('Script parsed. PluginAPI = ' + typeof PluginAPI, typeof PluginAPI === 'object' ? 'ok' : 'error');
 
-// Catch any uncaught JS errors into the debug panel
 window.onerror = function(msg, src, line, col, err) {
   dbg('UNCAUGHT ERROR line ' + line + ': ' + msg, 'error');
   return false;
@@ -820,7 +819,6 @@ window.addEventListener('unhandledrejection', function(e) {
   dbg('UNHANDLED REJECTION: ' + ((e.reason && e.reason.message) || String(e.reason)), 'error');
 });
 
-// Wire debug buttons after DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('dbg-bar').addEventListener('click', function() {
     _dbgOpen = !_dbgOpen;
@@ -842,14 +840,10 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
-// ─────────────────────────────────────────
-// THEME
-// ─────────────────────────────────────────
-
 function applyTheme() {
   var dark = false;
   try {
-    // Try reading SP parent frame's background colour
+
     var bg = getComputedStyle(window.parent.document.body).backgroundColor;
     var m  = bg.match(/\d+/g);
     if (m && m.length >= 3) {
@@ -861,11 +855,6 @@ function applyTheme() {
   document.documentElement.classList.toggle('dark', dark);
   dbg('Theme: ' + (dark ? 'dark' : 'light'), 'ok');
 }
-
-
-// ─────────────────────────────────────────
-// STATE
-// ─────────────────────────────────────────
 
 let store = {};
 let allTasks = [];
@@ -881,10 +870,6 @@ let pendingStartTs = null;
 const PX_PER_MIN = 1.5;
 const schedState = { rangeStartMs: 0, pxPerMin: PX_PER_MIN };
 let schedTickCount = 0;
-
-// ─────────────────────────────────────────
-// PERSISTENCE
-// ─────────────────────────────────────────
 
 async function loadStore() {
   try {
@@ -968,13 +953,6 @@ function getSchedSettings() { return Object.assign({ zoomIdx: 2, fontSize: 9, pa
 function saveSchedSettings(s) { store['sched-settings'] = s; scheduleSave(); }
 function currentPxPerMin() { var ss = getSchedSettings(); return PX_PER_MIN_BASE * ZOOM_LEVELS[ss.zoomIdx]; }
 
-
-// ─────────────────────────────────────────
-// TIMER
-// ─────────────────────────────────────────
-
-// Apply running-timer UI state from the current `timer` object.
-// Called by startTimer(), crash recovery, and cross-window sync.
 function applyTimerUI() {
   document.getElementById('task-input').value = (timer.taskTitle || '') + (timer.jiraId ? ' (' + timer.jiraId + ')' : '');
   document.getElementById('start-time-input').value = timer.startTs ? tsToHHMM(timer.startTs) : '';
@@ -1074,11 +1052,6 @@ function tickTimer() {
   if (schedTickCount % 40 === 0) updateSchedNow();
 }
 
-
-// ─────────────────────────────────────────
-// MERGE LOGIC
-// ─────────────────────────────────────────
-
 async function handleMergeAndAdd(newEntry, entries) {
   const sameTask = entries.filter(function(e) { return e.taskId === newEntry.taskId; });
 
@@ -1126,10 +1099,6 @@ function addSorted(entries, entry) {
   saveEntries(selectedDate, entries);
 }
 
-// ─────────────────────────────────────────
-// TOTAL TIME
-// ─────────────────────────────────────────
-
 function calcTotal(d) {
   var ms = getEntries(d).reduce(function(s, e) { return s + Math.max(0, e.endTs - e.startTs); }, 0);
   if (timer.running && d === selectedDate) ms += Date.now() - timer.startTs;
@@ -1139,10 +1108,6 @@ function calcTotal(d) {
 function updateTotal() {
   document.getElementById('total-display').textContent = 'Total: ' + msToDur(calcTotal(selectedDate));
 }
-
-// ─────────────────────────────────────────
-// TIMELINE (entry list)
-// ─────────────────────────────────────────
 
 function renderTimeline() {
   var el = document.getElementById('timeline');
@@ -1201,10 +1166,6 @@ function buildEntryCard(entry) {
   return div;
 }
 
-// ─────────────────────────────────────────
-// INLINE EDIT
-// ─────────────────────────────────────────
-
 function handleInlineEdit(e) {
   var inp = e.target, field = inp.dataset.f, id = inp.dataset.id;
   var entries = getEntries(selectedDate);
@@ -1261,10 +1222,6 @@ function hasOverlap(entries, excludeId, start, end) {
   return entries.some(function(e) { return e.id !== excludeId && start < e.endTs && end > e.startTs; });
 }
 
-// ─────────────────────────────────────────
-// ENTRY ACTIONS
-// ─────────────────────────────────────────
-
 function handleEntryAction(e) {
   var btn = e.currentTarget, action = btn.dataset.a, id = btn.dataset.id;
   var entries = getEntries(selectedDate);
@@ -1280,11 +1237,6 @@ function handleEntryAction(e) {
     startTimer(entry.taskId, entry.title, entry.jiraId);
   }
 }
-
-
-// ─────────────────────────────────────────
-// DAY PICKER
-// ─────────────────────────────────────────
 
 function selectDate(dateStr) {
   selectedDate = dateStr;
@@ -1308,10 +1260,6 @@ function selectDate(dateStr) {
   renderTimeline();
   updateTotal();
 }
-
-// ─────────────────────────────────────────
-// TASK SEARCH / TASK HELPERS
-// ─────────────────────────────────────────
 
 function taskJiraId(task) {
   return (task.issueData && task.issueData.key) || task.issueKey || task.externalId || null;
@@ -1350,10 +1298,6 @@ function pickTask(task) {
   document.getElementById('task-dropdown').classList.add('hidden');
 }
 
-// ─────────────────────────────────────────
-// TODAY & INBOX TASK LIST
-// ─────────────────────────────────────────
-
 function getTodayAndInboxTasks() {
   var today    = todayStr();
   var todayTs  = new Date(today + 'T00:00:00').getTime();
@@ -1364,13 +1308,10 @@ function getTodayAndInboxTasks() {
   var seen = {};
 
   allTasks.forEach(function(t) {
-    // NOTE: SP's TODAY tag is VIRTUAL — it never appears in task.tagIds.
-    // Today membership comes from dueDay or dueWithTime only.
+
     var isToday = t.dueDay === today ||
                   (t.dueWithTime && t.dueWithTime >= todayTs && t.dueWithTime < nextTs);
-    // "Inbox" = everything not due on a FUTURE day (includes project tasks with no dueDay,
-    // overdue tasks, and classic no-project inbox tasks). Previously filtered by !projectId
-    // which hid all Jira/project tasks as soon as any Today task existed.
+
     var isInbox = !t.dueDay || t.dueDay <= today;
 
     if (isToday) {
@@ -1392,14 +1333,12 @@ function renderTodayTasks() {
   var seen   = {};
   groups.todayList.forEach(function(t) { seen[t.id] = true; });
 
-  // "Assigned to me" — Jira issues assigned to current user, not in Today, not done
   var assignedList = allTasks.filter(function(t) {
     var jiraKey = taskJiraId(t) || t.issueId;
     return jiraKey && _myJiraKeys.has(jiraKey) && !seen[t.id] && !t.isDone;
   });
   assignedList.forEach(function(t) { seen[t.id] = true; });
 
-  // Exclude assigned tasks from Other so there's no duplication
   var inboxList = groups.inboxList.filter(function(t) { return !seen[t.id]; });
 
   var total = groups.todayList.length + assignedList.length + inboxList.length;
@@ -1454,7 +1393,6 @@ function renderTodayTasks() {
 
   if (groups.todayList.length > 0) makeSection('Today', groups.todayList, 'today');
 
-  // "Assigned to me" section — always shown when Jira configured, even if empty
   var cfg = getJiraCfg();
   if (cfg && cfg.baseUrl) {
     if (assignedList.length > 0) {
@@ -1476,17 +1414,11 @@ function renderTodayTasks() {
   if (inboxList.length > 0) makeSection('Other Tasks', inboxList.slice(0, 30), 'other');
 }
 
-
-// ─────────────────────────────────────────
-// PINNED TASKS
-// ─────────────────────────────────────────
-
 function renderPins() {
   var container = document.getElementById('pin-chips');
   var ps = getPinSettings();
   container.innerHTML = '';
 
-  // Apply layout class to parent bar
   var bar = container.closest('.pins-bar');
   if (bar) bar.classList.toggle('stacked', ps.layout === 'stacked');
 
@@ -1496,7 +1428,6 @@ function renderPins() {
     var jira     = taskJiraId(task);
     var isActive = timer.running && timer.taskId === id;
 
-    // Build label based on setting
     var shortTag = jira || task.title.slice(0, 5).toUpperCase();
     var labelText = ps.label === 'name'    ? task.title
                   : ps.label === 'tagname' ? (jira ? jira + ' ' : '') + task.title
@@ -1578,11 +1509,6 @@ function renderPinSearch(q) {
   });
 }
 
-
-// ─────────────────────────────────────────
-// SCHEDULE VIEW (right panel)
-// ─────────────────────────────────────────
-
 function safeRenderSchedule() {
   try { renderScheduleView(); } catch (err) {
     dbg('renderScheduleView ERROR: ' + err.message, 'error');
@@ -1620,7 +1546,6 @@ function renderScheduleView() {
   var entries  = getEntries(selectedDate);
   var dayStart = new Date(selectedDate + 'T00:00:00').getTime();
 
-  // Visible hour range: minimum full work day 7–20, always include current time
   var rangeStartHour = 7, rangeEndHour = 20;
 
   if (selectedDate === todayStr()) {
@@ -1654,7 +1579,6 @@ function renderScheduleView() {
   grid.innerHTML = '';
   grid.style.height = totalHeight + 'px';
 
-  // Hour and half-hour grid lines
   for (var h = rangeStartHour; h <= rangeEndHour; h++) {
     var y = (h - rangeStartHour) * 60 * pxpm;
 
@@ -1676,7 +1600,6 @@ function renderScheduleView() {
     }
   }
 
-  // Include the live timer as a synthetic entry so computeColumns can detect overlaps with it
   var liveEntry = null;
   if (timer.running && selectedDate === todayStr()) {
     liveEntry = { id: '__live__', startTs: timer.startTs, endTs: Date.now() };
@@ -1690,7 +1613,6 @@ function renderScheduleView() {
     if (block) grid.appendChild(block);
   });
 
-  // Live "in-progress" block — positioned using its column slot
   if (liveEntry) {
     var ci      = cols['__live__'] || { col: 0, totalCols: 1 };
     var startMin = (liveEntry.startTs - rangeStartMs) / 60000;
@@ -1714,7 +1636,6 @@ function renderScheduleView() {
     grid.appendChild(live);
   }
 
-  // Current-time "now" line
   if (selectedDate === todayStr()) {
     var nowMin   = (Date.now() - rangeStartMs) / 60000;
     if (nowMin >= 0 && nowMin <= totalMinutes) {
@@ -1743,7 +1664,7 @@ function buildScheduleBlock(entry, rangeStartMs, pxpm, col, totalCols) {
   block.dataset.id = entry.id;
   block.style.top       = top + 'px';
   block.style.minHeight = height + 'px';
-  // Column layout: split horizontally when entries overlap
+
   if (totalCols === 1) {
     block.style.left  = '40px';
     block.style.right = '4px';
@@ -1769,13 +1690,11 @@ function buildScheduleBlock(entry, rangeStartMs, pxpm, col, totalCols) {
   botH.addEventListener('mousedown', function(e) { onHandleMousedown(e, entry, 'bot'); });
   block.appendChild(botH);
 
-  // Block body drag = move the entire entry
   block.addEventListener('mousedown', function(e) {
     if (e.target.classList.contains('sched-handle') || e.target.closest('.sched-handle')) return;
     onBlockMove(e, entry);
   });
 
-  // Right-click context menu
   block.addEventListener('contextmenu', function(e) {
     e.preventDefault(); e.stopPropagation();
     showCtxMenu(e, entry);
@@ -1801,7 +1720,7 @@ function onHandleMousedown(e, entry, handle) {
 
     if (handle === 'top') {
       var ns = origStart + deltaMs;
-      // Snap start edge to the end of a nearby entry
+
       var SNAP_THRESH = 8 * 60000;
       getEntries(selectedDate).forEach(function(o) {
         if (o.id !== entry.id && Math.abs(o.endTs - ns) < SNAP_THRESH) ns = o.endTs;
@@ -1809,7 +1728,7 @@ function onHandleMousedown(e, entry, handle) {
       if (ns < origEnd - SNAP_MS) entry.startTs = ns;
     } else {
       var ne = origEnd + deltaMs;
-      // Snap end edge to the start of a nearby entry
+
       var SNAP_THRESH = 8 * 60000;
       getEntries(selectedDate).forEach(function(o) {
         if (o.id !== entry.id && Math.abs(o.startTs - ne) < SNAP_THRESH) ne = o.startTs;
@@ -1817,7 +1736,6 @@ function onHandleMousedown(e, entry, handle) {
       if (ne > origStart + SNAP_MS) entry.endTs = ne;
     }
 
-    // Live-update block position
     if (block) {
       var om = (entry.startTs - schedState.rangeStartMs) / 60000;
       var dm = Math.max(1, (entry.endTs - entry.startTs) / 60000);
@@ -1825,7 +1743,6 @@ function onHandleMousedown(e, entry, handle) {
       block.style.height = Math.max(6, dm * schedState.pxPerMin) + 'px';
     }
 
-    // Mirror into list card fields
     var card = document.querySelector('.entry-card[data-id="' + entry.id + '"]');
     if (card) {
       var si = card.querySelector('[data-f="start"]');
@@ -1882,7 +1799,6 @@ function showCtxMenu(e, entry) {
     m.appendChild(div);
   });
 
-  // Position at cursor, keep inside viewport
   var x = e.clientX, y = e.clientY;
   m.classList.remove('hidden');
   var rect = m.getBoundingClientRect();
@@ -1935,7 +1851,6 @@ function onBlockMove(e, entry) {
     var newStart = origStart + deltaMs;
     var newEnd   = newStart + dur;
 
-    // Clamp to day
     if (newStart < dayStart) { newStart = dayStart; newEnd = newStart + dur; }
     if (newEnd > dayStart + 86400000) { newEnd = dayStart + 86400000; newStart = newEnd - dur; }
 
@@ -2001,10 +1916,123 @@ function schedScrollToNow() {
   panel.scrollTop = Math.max(0, nowMin * schedState.pxPerMin - panel.clientHeight / 3);
 }
 
+var _quickEntry = null;
 
-// ─────────────────────────────────────────
-// JIRA SYNC
-// ─────────────────────────────────────────
+function hideQuickEntry() {
+  if (_quickEntry && _quickEntry.parentNode) _quickEntry.parentNode.removeChild(_quickEntry);
+  _quickEntry = null;
+  document.removeEventListener('mousedown', _onQuickEntryOutside, true);
+}
+
+function _onQuickEntryOutside(e) {
+  if (_quickEntry && !_quickEntry.contains(e.target)) hideQuickEntry();
+}
+
+function onScheduleGridClick(e) {
+  if (e.target.closest('.sched-entry-block') || e.target.closest('.sched-handle')) return;
+
+  var panel = document.getElementById('right-panel');
+  var grid  = document.getElementById('schedule-grid');
+  var gridRect = grid.getBoundingClientRect();
+
+  var y = e.clientY - gridRect.top + panel.scrollTop;
+  var clickTs = schedState.rangeStartMs + (y / schedState.pxPerMin) * 60000;
+
+  var SNAP = 15 * 60000;
+  var startTs = Math.round(clickTs / SNAP) * SNAP;
+  var endTs   = startTs + 30 * 60000;
+
+  showQuickEntry(e.clientX, e.clientY, startTs, endTs);
+}
+
+function showQuickEntry(cx, cy, startTs, endTs) {
+  hideQuickEntry();
+
+  var wrap = document.createElement('div');
+  wrap.className = 'sched-quick-entry';
+
+  var timeLabel = document.createElement('div');
+  timeLabel.className = 'sched-quick-entry-time';
+  timeLabel.textContent = tsToHHMM(startTs) + ' – ' + tsToHHMM(endTs);
+  wrap.appendChild(timeLabel);
+
+  var inp = document.createElement('input');
+  inp.type = 'text';
+  inp.placeholder = 'Search or type task name…';
+  inp.autocomplete = 'off';
+  wrap.appendChild(inp);
+
+  var results = document.createElement('div');
+  results.className = 'sched-quick-entry-results';
+  wrap.appendChild(results);
+
+  var pickedTask = null;
+
+  function renderResults(q) {
+    results.innerHTML = '';
+    searchTasks(q).forEach(function(task) {
+      var jira = taskJiraId(task);
+      var div = document.createElement('div');
+      div.className = 'task-dd-item';
+      div.innerHTML = (jira ? '<span class="jira-chip">' + esc(jira) + '</span>' : '') +
+                      '<span class="task-dd-title">' + esc(task.title) + '</span>';
+      div.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        commit(task.id, task.title, jira);
+      });
+      results.appendChild(div);
+    });
+  }
+
+  function commit(taskId, taskTitle, jiraId) {
+    hideQuickEntry();
+    var entry = {
+      id: uuid(), taskId: taskId, jiraId: jiraId || null,
+      title: taskTitle, startTs: startTs, endTs: endTs,
+      status: 'pending', errorMsg: null,
+    };
+    addSorted(getEntries(selectedDate), entry);
+    renderTimeline();
+    updateTotal();
+  }
+
+  inp.addEventListener('input', function() {
+    pickedTask = null;
+    renderResults(inp.value);
+  });
+
+  inp.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { hideQuickEntry(); return; }
+    if (e.key !== 'Enter') return;
+    var q = inp.value.trim();
+    if (!q) { hideQuickEntry(); return; }
+    var items = searchTasks(q);
+    if (items.length === 1) {
+      commit(items[0].id, items[0].title, taskJiraId(items[0]));
+    } else {
+      var m = q.match(/\(([A-Z][A-Z0-9_]+-\d+)\)\s*$/);
+      commit('custom-' + Date.now(), m ? q.replace(/\s*\([^)]+\)\s*$/, '').trim() : q, m ? m[1] : null);
+    }
+  });
+
+  document.body.appendChild(wrap);
+  _quickEntry = wrap;
+  wrap.style.visibility = 'hidden';
+
+  setTimeout(function() {
+    var rect = wrap.getBoundingClientRect();
+    var x = cx, y = cy + 8;
+    if (x + rect.width  > window.innerWidth)  x = window.innerWidth  - rect.width  - 8;
+    if (y + rect.height > window.innerHeight) y = cy - rect.height - 8;
+    wrap.style.left = x + 'px';
+    wrap.style.top  = y + 'px';
+    wrap.style.visibility = '';
+    inp.focus();
+    renderResults('');
+  }, 0);
+
+  document.addEventListener('mousedown', _onQuickEntryOutside, true);
+}
 
 async function finishDay() {
   var cfg     = getJiraCfg();
@@ -2015,7 +2043,7 @@ async function finishDay() {
   if (pending.length === 0 && noId.length === 0) {
     PluginAPI.showSnack({ msg: 'No pending entries to sync', type: 'INFO' }); return;
   }
-  // Mark non-Jira entries as done right away — they can't be synced but the day should still finish
+
   if (noId.length > 0) {
     noId.forEach(function(e) { e.status = 'synced'; });
     saveEntries(selectedDate, entries);
@@ -2076,11 +2104,6 @@ async function finishDay() {
   }
 }
 
-
-// ─────────────────────────────────────────
-// TASKS LOADER (non-blocking, with timeout)
-// ─────────────────────────────────────────
-
 function loadTasks() {
   var resolved = false;
   dbg('loadTasks() → calling PluginAPI.getTasks()…');
@@ -2128,15 +2151,11 @@ function loadTasks() {
   }
 }
 
-// ─────────────────────────────────────────
-// INIT
-// ─────────────────────────────────────────
-
 function applySchedFontSize(size) {
   document.querySelectorAll('.sched-entry-label').forEach(function(el) {
     el.style.fontSize = size + 'px';
   });
-  // Store as CSS variable so future renders also use it
+
   document.documentElement.style.setProperty('--sched-font-size', size + 'px');
 }
 function updateZoomLabel() {
@@ -2147,10 +2166,9 @@ function updateZoomLabel() {
 
 async function init() {
   dbg('init() start — PluginAPI type: ' + typeof PluginAPI);
-  // 1. Load persisted data (required for crash-recovery, fast)
+
   await loadStore();
 
-  // Auto-detect SP's native Jira config if we don't have one yet
   if (!(store['jira-config'] && store['jira-config'].baseUrl)) {
     var _detected = await detectSpJiraConfig();
     if (_detected) {
@@ -2160,13 +2178,10 @@ async function init() {
     }
   }
 
-  // Fetch Jira issues assigned to current user (non-blocking)
   fetchJiraAssigned();
 
-  // 2. Detect and apply theme
   applyTheme();
 
-  // 3. Crash-recovery: restore running timer
   var saved = store['timer-state'];
   if (saved && saved.running && saved.taskId) {
     Object.assign(timer, saved);
@@ -2176,7 +2191,6 @@ async function init() {
     tickTimer();
   }
 
-  // 4. Render UI immediately — NO await before this point for tasks
   dbg('selectDate + renderPins…');
   selectDate(todayStr());
   renderPins();
@@ -2185,13 +2199,9 @@ async function init() {
   document.getElementById('today-tasks-count').textContent = '…';
   dbg('UI rendered, wiring listeners…', 'ok');
 
-  // 4. Scroll schedule to now
   setTimeout(schedScrollToNow, 200);
 
-  // 5. Load tasks non-blocking — resolves independently of UI setup
   loadTasks();
-
-  // ── Event listeners ──
 
   var taskInp = document.getElementById('task-input');
   taskInp.addEventListener('input', function() {
@@ -2208,7 +2218,6 @@ async function init() {
       hideCtxMenu();
   });
 
-  // Today & Inbox toggle
   document.getElementById('today-tasks-toggle').addEventListener('click', function() {
     document.getElementById('today-task-list').classList.toggle('hidden');
   });
@@ -2258,7 +2267,6 @@ async function init() {
 
   document.getElementById('finish-day-btn').addEventListener('click', finishDay);
 
-  // Settings open
   document.getElementById('settings-btn').addEventListener('click', function() {
     var ps  = getPinSettings();
     var ss  = getSchedSettings();
@@ -2338,7 +2346,7 @@ async function init() {
     if (e.target === document.getElementById('settings-overlay'))
       document.getElementById('settings-overlay').classList.add('hidden');
   });
-  // Pin settings — live apply
+
   document.querySelectorAll('input[name="pin-layout"], input[name="pin-label"]').forEach(function(r) {
     r.addEventListener('change', function() {
       var ps = getPinSettings();
@@ -2349,7 +2357,7 @@ async function init() {
       savePinSettings(ps); renderPins();
     });
   });
-  // Font size — live apply
+
   document.getElementById('sched-fontsize').addEventListener('change', function() {
     var ss = getSchedSettings();
     ss.fontSize = parseInt(this.value);
@@ -2357,7 +2365,6 @@ async function init() {
     applySchedFontSize(ss.fontSize);
   });
 
-  // Zoom buttons
   document.getElementById('zoom-in').addEventListener('click', function() {
     var ss = getSchedSettings();
     if (ss.zoomIdx < ZOOM_LEVELS.length - 1) { ss.zoomIdx++; saveSchedSettings(ss); safeRenderSchedule(); updateZoomLabel(); }
@@ -2367,7 +2374,6 @@ async function init() {
     if (ss.zoomIdx > 0) { ss.zoomIdx--; saveSchedSettings(ss); safeRenderSchedule(); updateZoomLabel(); }
   });
 
-  // Panel resize
   var resizeHandle = document.getElementById('sched-resize-handle');
   var rightPanel   = document.getElementById('right-panel');
   resizeHandle.addEventListener('mousedown', function(e) {
@@ -2388,7 +2394,6 @@ async function init() {
     document.addEventListener('mouseup', onUp);
   });
 
-  // Apply saved schedule settings on load
   (function() {
     var ss = getSchedSettings();
     if (ss.panelWidth) rightPanel.style.width = ss.panelWidth + 'px';
@@ -2396,7 +2401,6 @@ async function init() {
     updateZoomLabel();
   })();
 
-  // Pin search
   document.getElementById('add-pin-btn').addEventListener('click', function() {
     document.getElementById('pin-search-input').value = '';
     renderPinSearch('');
@@ -2412,7 +2416,8 @@ async function init() {
   });
   document.getElementById('pin-search-input').addEventListener('input', function(e) { renderPinSearch(e.target.value); });
 
-  // ── Register SP hooks (must run after PluginAPI is available) ──
+  document.getElementById('schedule-grid').addEventListener('click', onScheduleGridClick);
+
   try {
     PluginAPI.registerHook(PluginAPI.Hooks.PERSISTED_DATA_CHANGED, async function() {
       dbg('HOOK: PERSISTED_DATA_CHANGED');
@@ -2476,9 +2481,6 @@ async function init() {
   dbg('init() complete', 'ok');
 }
 
-// ── Wait for PluginAPI to be injected by SP, then init ──
-// SP injects PluginAPI into the iframe window asynchronously after load.
-// We poll window.PluginAPI (safe — never throws for missing window props).
 var _initDone = false;
 var _syncingToSP = false;
 function safeInit() {
@@ -2494,7 +2496,7 @@ var _poll = setInterval(function() {
   if (typeof window.PluginAPI !== 'undefined') {
     clearInterval(_poll);
     dbg('PluginAPI injected after ~' + (_pollCount * 50) + 'ms', 'ok');
-    // Register onReady AND call directly in case ready already fired
+
     try { window.PluginAPI.onReady(safeInit); } catch(_) {}
     setTimeout(safeInit, 200); // fallback if onReady never fires
   } else if (_pollCount >= 200) { // 10s hard timeout

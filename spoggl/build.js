@@ -22,8 +22,21 @@ const JS_FILES = [
   'init.js',
 ];
 
-const css  = fs.readFileSync(path.join(srcDir, 'style.css'), 'utf8');
-const js   = JS_FILES.map(f => fs.readFileSync(path.join(srcDir, f), 'utf8')).join('\n\n');
+function stripCssComments(src) {
+  // Remove /* ... */ block comments
+  return src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\n{3,}/g, '\n\n');
+}
+
+function stripJsComments(src) {
+  // Remove lines that are purely a comment (// ...) — preserves inline trailing comments
+  // and never touches strings or regex by only matching full lines
+  return src
+    .replace(/^[ \t]*\/\/.*$/gm, '')
+    .replace(/\n{3,}/g, '\n\n');
+}
+
+const css  = stripCssComments(fs.readFileSync(path.join(srcDir, 'style.css'), 'utf8'));
+const js   = stripJsComments(JS_FILES.map(f => fs.readFileSync(path.join(srcDir, f), 'utf8')).join('\n\n'));
 const tmpl = fs.readFileSync(path.join(__dirname, 'template.html'), 'utf8');
 
 const header = '<!-- GENERATED — do not edit directly. Edit src/ files, then run: node build.js -->\n';
@@ -33,4 +46,5 @@ const out = header + tmpl
   .replace('/* SCRIPT */', js);
 
 fs.writeFileSync(path.join(__dirname, 'index.html'), out, 'utf8');
-console.log('Built index.html (' + out.length + ' chars, ' + out.split('\n').length + ' lines)');
+const sizeKB = (Buffer.byteLength(out, 'utf8') / 1024).toFixed(1);
+console.log('Built index.html (' + sizeKB + ' KB, ' + out.split('\n').length + ' lines)');

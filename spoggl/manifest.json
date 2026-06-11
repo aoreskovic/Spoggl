@@ -1,7 +1,7 @@
 {
   "id": "spoggl",
   "name": "Spoggl",
-  "version": "1.0.0",
+  "version": "0.2.0",
   "description": "Toggl-like daily time tracking with inline edit, pinned tasks, Jira worklog sync, and SP native timer integration.",
   "manifestVersion": 1,
   "minSupVersion": "14.0.2",

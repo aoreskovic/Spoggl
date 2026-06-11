@@ -419,3 +419,123 @@ function schedScrollToNow() {
   var nowMin = (Date.now() - schedState.rangeStartMs) / 60000;
   panel.scrollTop = Math.max(0, nowMin * schedState.pxPerMin - panel.clientHeight / 3);
 }
+
+// ── Quick entry on empty grid click ──
+
+var _quickEntry = null;
+
+function hideQuickEntry() {
+  if (_quickEntry && _quickEntry.parentNode) _quickEntry.parentNode.removeChild(_quickEntry);
+  _quickEntry = null;
+  document.removeEventListener('mousedown', _onQuickEntryOutside, true);
+}
+
+function _onQuickEntryOutside(e) {
+  if (_quickEntry && !_quickEntry.contains(e.target)) hideQuickEntry();
+}
+
+function onScheduleGridClick(e) {
+  if (e.target.closest('.sched-entry-block') || e.target.closest('.sched-handle')) return;
+
+  var panel = document.getElementById('right-panel');
+  var grid  = document.getElementById('schedule-grid');
+  var gridRect = grid.getBoundingClientRect();
+
+  var y = e.clientY - gridRect.top + panel.scrollTop;
+  var clickTs = schedState.rangeStartMs + (y / schedState.pxPerMin) * 60000;
+
+  var SNAP = 15 * 60000;
+  var startTs = Math.round(clickTs / SNAP) * SNAP;
+  var endTs   = startTs + 30 * 60000;
+
+  showQuickEntry(e.clientX, e.clientY, startTs, endTs);
+}
+
+function showQuickEntry(cx, cy, startTs, endTs) {
+  hideQuickEntry();
+
+  var wrap = document.createElement('div');
+  wrap.className = 'sched-quick-entry';
+
+  var timeLabel = document.createElement('div');
+  timeLabel.className = 'sched-quick-entry-time';
+  timeLabel.textContent = tsToHHMM(startTs) + ' – ' + tsToHHMM(endTs);
+  wrap.appendChild(timeLabel);
+
+  var inp = document.createElement('input');
+  inp.type = 'text';
+  inp.placeholder = 'Search or type task name…';
+  inp.autocomplete = 'off';
+  wrap.appendChild(inp);
+
+  var results = document.createElement('div');
+  results.className = 'sched-quick-entry-results';
+  wrap.appendChild(results);
+
+  var pickedTask = null;
+
+  function renderResults(q) {
+    results.innerHTML = '';
+    searchTasks(q).forEach(function(task) {
+      var jira = taskJiraId(task);
+      var div = document.createElement('div');
+      div.className = 'task-dd-item';
+      div.innerHTML = (jira ? '<span class="jira-chip">' + esc(jira) + '</span>' : '') +
+                      '<span class="task-dd-title">' + esc(task.title) + '</span>';
+      div.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        commit(task.id, task.title, jira);
+      });
+      results.appendChild(div);
+    });
+  }
+
+  function commit(taskId, taskTitle, jiraId) {
+    hideQuickEntry();
+    var entry = {
+      id: uuid(), taskId: taskId, jiraId: jiraId || null,
+      title: taskTitle, startTs: startTs, endTs: endTs,
+      status: 'pending', errorMsg: null,
+    };
+    addSorted(getEntries(selectedDate), entry);
+    renderTimeline();
+    updateTotal();
+  }
+
+  inp.addEventListener('input', function() {
+    pickedTask = null;
+    renderResults(inp.value);
+  });
+
+  inp.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { hideQuickEntry(); return; }
+    if (e.key !== 'Enter') return;
+    var q = inp.value.trim();
+    if (!q) { hideQuickEntry(); return; }
+    var items = searchTasks(q);
+    if (items.length === 1) {
+      commit(items[0].id, items[0].title, taskJiraId(items[0]));
+    } else {
+      var m = q.match(/\(([A-Z][A-Z0-9_]+-\d+)\)\s*$/);
+      commit('custom-' + Date.now(), m ? q.replace(/\s*\([^)]+\)\s*$/, '').trim() : q, m ? m[1] : null);
+    }
+  });
+
+  document.body.appendChild(wrap);
+  _quickEntry = wrap;
+  wrap.style.visibility = 'hidden';
+
+  setTimeout(function() {
+    var rect = wrap.getBoundingClientRect();
+    var x = cx, y = cy + 8;
+    if (x + rect.width  > window.innerWidth)  x = window.innerWidth  - rect.width  - 8;
+    if (y + rect.height > window.innerHeight) y = cy - rect.height - 8;
+    wrap.style.left = x + 'px';
+    wrap.style.top  = y + 'px';
+    wrap.style.visibility = '';
+    inp.focus();
+    renderResults('');
+  }, 0);
+
+  document.addEventListener('mousedown', _onQuickEntryOutside, true);
+}
