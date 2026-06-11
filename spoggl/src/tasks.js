@@ -30,7 +30,8 @@ function selectDate(dateStr) {
 // ─────────────────────────────────────────
 
 function taskJiraId(task) {
-  return (task.issueData && task.issueData.key) || task.issueKey || task.externalId || null;
+  return (task.issueData && (task.issueData.key || task.issueData.issueKey)) ||
+         task.issueKey || task.externalId || null;
 }
 
 function searchTasks(q) {
@@ -108,19 +109,21 @@ function renderTodayTasks() {
   var seen   = {};
   groups.todayList.forEach(function(t) { seen[t.id] = true; });
 
-  // "Assigned to me" — Jira issues assigned to current user, not in Today, not done
+  // "Assigned to me" — Jira issues assigned to current user, not already in Today.
+  // Do NOT filter by t.isDone: SP and Jira done-states are independent.
+  // _myJiraKeys already contains only unresolved issues (filtered in JQL).
   var assignedList = allTasks.filter(function(t) {
     var jiraKey = taskJiraId(t) || t.issueId;
-    return jiraKey && _myJiraKeys.has(jiraKey) && !seen[t.id] && !t.isDone;
+    return jiraKey && _myJiraKeys.has(jiraKey) && !seen[t.id];
   });
+  dbg('renderTodayTasks: assignedList=' + assignedList.length + ' _myJiraKeys=' + _myJiraKeys.size, 'state');
   assignedList.forEach(function(t) { seen[t.id] = true; });
 
   // Exclude assigned tasks from Other so there's no duplication
   var inboxList = groups.inboxList.filter(function(t) { return !seen[t.id]; });
 
   var total = groups.todayList.length + assignedList.length + inboxList.length;
-  var showAll = (total === 0 && allTasks.length > 0);
-  count.textContent = showAll ? allTasks.length : total;
+  count.textContent = total > 0 ? total : allTasks.length;
   list.innerHTML = '';
 
   function makeItem(task) {
@@ -158,29 +161,12 @@ function renderTodayTasks() {
     }
   }
 
-  if (showAll) {
-    makeSection('All Tasks', allTasks, 'other');
-    return;
-  }
-
-  if (total === 0 && _myJiraKeys.size === 0) {
-    list.innerHTML = '<div style="padding:12px;text-align:center;font-size:13px;color:#9e9e9e">No tasks in Today or Inbox</div>';
-    return;
-  }
-
   if (groups.todayList.length > 0) makeSection('Today', groups.todayList, 'today');
 
-  // "Assigned to me" section — always shown when Jira configured, even if empty
+  // "Assigned to me" — always render if Jira configured, regardless of other sections
   var cfg = getJiraCfg();
   if (cfg && cfg.baseUrl) {
-    if (assignedList.length > 0) {
-      makeSection('Assigned to me', assignedList, 'assigned');
-    } else {
-      var hdrA = document.createElement('div');
-      hdrA.className = 'tt-section tt-section-toggle';
-      hdrA.innerHTML = '<span class="tt-chevron">&#9660;</span>Assigned to me<span class="tt-section-count">0</span>';
-      list.appendChild(hdrA);
-    }
+    makeSection('Assigned to me', assignedList, 'assigned');
   } else {
     var hdrJ = document.createElement('div');
     hdrJ.className = 'tt-section';
@@ -189,5 +175,13 @@ function renderTodayTasks() {
     list.appendChild(hdrJ);
   }
 
-  if (inboxList.length > 0) makeSection('Other Tasks', inboxList.slice(0, 30), 'other');
+  // Other Tasks: inbox items, or all tasks if nothing else matched
+  var otherList = inboxList.length > 0 ? inboxList.slice(0, 30)
+                : total === 0          ? allTasks.slice(0, 30)
+                : [];
+  if (otherList.length > 0) makeSection('Other Tasks', otherList, 'other');
+
+  if (list.children.length === 0) {
+    list.innerHTML = '<div style="padding:12px;text-align:center;font-size:13px;color:#9e9e9e">No tasks found</div>';
+  }
 }

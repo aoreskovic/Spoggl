@@ -13,6 +13,7 @@ body {
   font-size: 14px;
 }
 
+
 html.dark {
   --bg: #1e1e2e; --bg-darker: #181825; --card-bg: #252535;
   --text-color: #cdd6f4; --text-color-muted: #8895b0;
@@ -34,6 +35,7 @@ html.dark .sched-entry-block.st-synced .sched-handle::after { background: #a6e3a
 html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba8; }
 .hidden { display: none !important; }
 
+
 .app-layout { display: flex; height: 100vh; min-height: 0; overflow: hidden; }
 
 .left-panel {
@@ -49,6 +51,7 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
   background: var(--bg, #fafafa);
   position: relative;
 }
+
 
 .omnibar {
   background: var(--card-bg, #fff);
@@ -109,6 +112,7 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
   background: #f44336 !important; border-color: #f44336 !important; color: #fff !important;
 }
 
+
 .status-bar {
   display: flex; align-items: center; gap: 8px; padding: 6px 12px;
   background: var(--bg-darker, #f5f5f5);
@@ -117,6 +121,7 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
   font-size: 13px; margin-top: -8px;
 }
 .status-bar label { color: var(--text-color-muted, #757575); white-space: nowrap; }
+
 
 .day-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -134,6 +139,7 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
 #current-date-label { font-weight: 700; font-size: 13px; min-width: 152px; text-align: center; }
 .day-header-right { display: flex; align-items: center; gap: 8px; }
 .total-display { font-weight: 700; font-size: 15px; color: var(--c-primary, #7b2ff7); white-space: nowrap; }
+
 
 .pins-bar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-height: 32px; }
 .pins-label {
@@ -175,6 +181,7 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
 .pin-row-jira { font-weight: 700; font-size: 11px; flex-shrink: 0; color: var(--c-primary, #7b2ff7); }
 .pin-row.active .pin-row-jira { color: #fff; }
 
+
 .timeline-empty { text-align: center; color: #757575; padding: 24px 0; font-size: 13px; }
 .entry-card {
   background: var(--card-bg, #fff);
@@ -208,6 +215,7 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
 .icon-btn:hover { background: var(--bg-darker, #f5f5f5); color: var(--text-color, #212121); }
 .icon-btn.del:hover { color: #f44336; }
 .entry-err-row { width: 100%; font-size: 11px; color: #f44336; padding: 1px 2px; }
+
 
 .today-tasks {
   background: var(--card-bg, #fff);
@@ -254,6 +262,7 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
 }
 .tt-play { font-size: 9px; color: var(--c-primary, #7b2ff7); flex-shrink: 0; opacity: .5; }
 .today-task-item:hover .tt-play { opacity: 1; }
+
 
 .sched-hdr {
   padding: 8px 10px;
@@ -324,11 +333,13 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
 .sched-entry-block.st-synced .sched-handle::after { background: #4caf50; }
 .sched-entry-block.st-error  .sched-handle::after { background: #f44336; }
 
+
 .sched-resize-handle {
   position: absolute; left: -4px; top: 0; bottom: 0; width: 8px;
   cursor: col-resize; z-index: 50; border-radius: 4px;
 }
 .sched-resize-handle:hover, .sched-resize-handle.resizing { background: rgba(123,47,247,.35); }
+
 
 .sched-hdr { display: flex; align-items: center; justify-content: space-between; }
 .sched-zoom { display: flex; align-items: center; gap: 4px; }
@@ -340,6 +351,7 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
 }
 .sched-zoom-btn:hover { border-color: var(--c-primary, #7b2ff7); color: var(--c-primary, #7b2ff7); }
 .sched-zoom-lbl { font-size: 10px; color: var(--text-color-muted, #616161); min-width: 26px; text-align: center; }
+
 
 .ctx-menu {
   position: fixed; z-index: 2000;
@@ -355,6 +367,7 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
 }
 .ctx-item:hover { background: var(--bg-darker, #f5f5f5); }
 .ctx-item.danger { color: #e53935; }
+
 
 .sched-quick-entry {
   position: fixed; z-index: 3000;
@@ -378,6 +391,7 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
 .sched-quick-entry input:focus { outline: none; border-color: var(--c-primary, #7b2ff7); }
 .sched-quick-entry-results { max-height: 160px; overflow-y: auto; margin-top: 4px; }
 
+
 .settings-section { margin-bottom: 20px; }
 .settings-section-title {
   font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px;
@@ -398,6 +412,7 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
   border-radius: 4px; padding: 5px 8px;
   color: var(--text-color, #212121); font-family: inherit; font-size: 13px;
 }
+
 
 .overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,.45);
@@ -425,6 +440,7 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
 .form-row input:focus { outline: none; border-color: var(--c-primary, #7b2ff7); }
 .row-btns { display: flex; gap: 8px; margin-top: 16px; }
 .pin-results { max-height: 220px; overflow-y: auto; margin-top: 8px; }
+
 
 .dbg-panel {
   font-family: 'Consolas', 'Courier New', monospace;
@@ -653,6 +669,8 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
 
 <script>
 
+
+
 function uuid() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
     const r = Math.random() * 16 | 0;
@@ -737,6 +755,10 @@ function esc(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+
+
+
+
 var _dbgEntries = [];
 var _dbgOpen    = true;
 
@@ -809,7 +831,9 @@ function _dbgCopyFallback(text) {
   document.body.removeChild(ta);
 }
 
+
 dbg('Script parsed. PluginAPI = ' + typeof PluginAPI, typeof PluginAPI === 'object' ? 'ok' : 'error');
+
 
 window.onerror = function(msg, src, line, col, err) {
   dbg('UNCAUGHT ERROR line ' + line + ': ' + msg, 'error');
@@ -818,6 +842,7 @@ window.onerror = function(msg, src, line, col, err) {
 window.addEventListener('unhandledrejection', function(e) {
   dbg('UNHANDLED REJECTION: ' + ((e.reason && e.reason.message) || String(e.reason)), 'error');
 });
+
 
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('dbg-bar').addEventListener('click', function() {
@@ -840,6 +865,10 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
+
+
+
+
 function applyTheme() {
   var dark = false;
   try {
@@ -856,6 +885,10 @@ function applyTheme() {
   dbg('Theme: ' + (dark ? 'dark' : 'light'), 'ok');
 }
 
+
+
+
+
 let store = {};
 let allTasks = [];
 let selectedDate = todayStr();
@@ -870,6 +903,10 @@ let pendingStartTs = null;
 const PX_PER_MIN = 1.5;
 const schedState = { rangeStartMs: 0, pxPerMin: PX_PER_MIN };
 let schedTickCount = 0;
+
+
+
+
 
 async function loadStore() {
   try {
@@ -952,6 +989,12 @@ const ZOOM_LEVELS = [0.5, 0.75, 1, 1.5, 2, 3];
 function getSchedSettings() { return Object.assign({ zoomIdx: 2, fontSize: 9, panelWidth: 248 }, store['sched-settings'] || {}); }
 function saveSchedSettings(s) { store['sched-settings'] = s; scheduleSave(); }
 function currentPxPerMin() { var ss = getSchedSettings(); return PX_PER_MIN_BASE * ZOOM_LEVELS[ss.zoomIdx]; }
+
+
+
+
+
+
 
 function applyTimerUI() {
   document.getElementById('task-input').value = (timer.taskTitle || '') + (timer.jiraId ? ' (' + timer.jiraId + ')' : '');
@@ -1052,6 +1095,10 @@ function tickTimer() {
   if (schedTickCount % 40 === 0) updateSchedNow();
 }
 
+
+
+
+
 async function handleMergeAndAdd(newEntry, entries) {
   const sameTask = entries.filter(function(e) { return e.taskId === newEntry.taskId; });
 
@@ -1099,6 +1146,10 @@ function addSorted(entries, entry) {
   saveEntries(selectedDate, entries);
 }
 
+
+
+
+
 function calcTotal(d) {
   var ms = getEntries(d).reduce(function(s, e) { return s + Math.max(0, e.endTs - e.startTs); }, 0);
   if (timer.running && d === selectedDate) ms += Date.now() - timer.startTs;
@@ -1108,6 +1159,10 @@ function calcTotal(d) {
 function updateTotal() {
   document.getElementById('total-display').textContent = 'Total: ' + msToDur(calcTotal(selectedDate));
 }
+
+
+
+
 
 function renderTimeline() {
   var el = document.getElementById('timeline');
@@ -1166,6 +1221,10 @@ function buildEntryCard(entry) {
   return div;
 }
 
+
+
+
+
 function handleInlineEdit(e) {
   var inp = e.target, field = inp.dataset.f, id = inp.dataset.id;
   var entries = getEntries(selectedDate);
@@ -1222,6 +1281,10 @@ function hasOverlap(entries, excludeId, start, end) {
   return entries.some(function(e) { return e.id !== excludeId && start < e.endTs && end > e.startTs; });
 }
 
+
+
+
+
 function handleEntryAction(e) {
   var btn = e.currentTarget, action = btn.dataset.a, id = btn.dataset.id;
   var entries = getEntries(selectedDate);
@@ -1237,6 +1300,10 @@ function handleEntryAction(e) {
     startTimer(entry.taskId, entry.title, entry.jiraId);
   }
 }
+
+
+
+
 
 function selectDate(dateStr) {
   selectedDate = dateStr;
@@ -1261,8 +1328,13 @@ function selectDate(dateStr) {
   updateTotal();
 }
 
+
+
+
+
 function taskJiraId(task) {
-  return (task.issueData && task.issueData.key) || task.issueKey || task.externalId || null;
+  return (task.issueData && (task.issueData.key || task.issueData.issueKey)) ||
+         task.issueKey || task.externalId || null;
 }
 
 function searchTasks(q) {
@@ -1298,6 +1370,10 @@ function pickTask(task) {
   document.getElementById('task-dropdown').classList.add('hidden');
 }
 
+
+
+
+
 function getTodayAndInboxTasks() {
   var today    = todayStr();
   var todayTs  = new Date(today + 'T00:00:00').getTime();
@@ -1309,8 +1385,11 @@ function getTodayAndInboxTasks() {
 
   allTasks.forEach(function(t) {
 
+
     var isToday = t.dueDay === today ||
                   (t.dueWithTime && t.dueWithTime >= todayTs && t.dueWithTime < nextTs);
+
+
 
     var isInbox = !t.dueDay || t.dueDay <= today;
 
@@ -1333,17 +1412,21 @@ function renderTodayTasks() {
   var seen   = {};
   groups.todayList.forEach(function(t) { seen[t.id] = true; });
 
+
+
+
   var assignedList = allTasks.filter(function(t) {
     var jiraKey = taskJiraId(t) || t.issueId;
-    return jiraKey && _myJiraKeys.has(jiraKey) && !seen[t.id] && !t.isDone;
+    return jiraKey && _myJiraKeys.has(jiraKey) && !seen[t.id];
   });
+  dbg('renderTodayTasks: assignedList=' + assignedList.length + ' _myJiraKeys=' + _myJiraKeys.size, 'state');
   assignedList.forEach(function(t) { seen[t.id] = true; });
+
 
   var inboxList = groups.inboxList.filter(function(t) { return !seen[t.id]; });
 
   var total = groups.todayList.length + assignedList.length + inboxList.length;
-  var showAll = (total === 0 && allTasks.length > 0);
-  count.textContent = showAll ? allTasks.length : total;
+  count.textContent = total > 0 ? total : allTasks.length;
   list.innerHTML = '';
 
   function makeItem(task) {
@@ -1381,28 +1464,12 @@ function renderTodayTasks() {
     }
   }
 
-  if (showAll) {
-    makeSection('All Tasks', allTasks, 'other');
-    return;
-  }
-
-  if (total === 0 && _myJiraKeys.size === 0) {
-    list.innerHTML = '<div style="padding:12px;text-align:center;font-size:13px;color:#9e9e9e">No tasks in Today or Inbox</div>';
-    return;
-  }
-
   if (groups.todayList.length > 0) makeSection('Today', groups.todayList, 'today');
+
 
   var cfg = getJiraCfg();
   if (cfg && cfg.baseUrl) {
-    if (assignedList.length > 0) {
-      makeSection('Assigned to me', assignedList, 'assigned');
-    } else {
-      var hdrA = document.createElement('div');
-      hdrA.className = 'tt-section tt-section-toggle';
-      hdrA.innerHTML = '<span class="tt-chevron">&#9660;</span>Assigned to me<span class="tt-section-count">0</span>';
-      list.appendChild(hdrA);
-    }
+    makeSection('Assigned to me', assignedList, 'assigned');
   } else {
     var hdrJ = document.createElement('div');
     hdrJ.className = 'tt-section';
@@ -1411,13 +1478,26 @@ function renderTodayTasks() {
     list.appendChild(hdrJ);
   }
 
-  if (inboxList.length > 0) makeSection('Other Tasks', inboxList.slice(0, 30), 'other');
+
+  var otherList = inboxList.length > 0 ? inboxList.slice(0, 30)
+                : total === 0          ? allTasks.slice(0, 30)
+                : [];
+  if (otherList.length > 0) makeSection('Other Tasks', otherList, 'other');
+
+  if (list.children.length === 0) {
+    list.innerHTML = '<div style="padding:12px;text-align:center;font-size:13px;color:#9e9e9e">No tasks found</div>';
+  }
 }
+
+
+
+
 
 function renderPins() {
   var container = document.getElementById('pin-chips');
   var ps = getPinSettings();
   container.innerHTML = '';
+
 
   var bar = container.closest('.pins-bar');
   if (bar) bar.classList.toggle('stacked', ps.layout === 'stacked');
@@ -1427,6 +1507,7 @@ function renderPins() {
     if (!task) return;
     var jira     = taskJiraId(task);
     var isActive = timer.running && timer.taskId === id;
+
 
     var shortTag = jira || task.title.slice(0, 5).toUpperCase();
     var labelText = ps.label === 'name'    ? task.title
@@ -1509,6 +1590,10 @@ function renderPinSearch(q) {
   });
 }
 
+
+
+
+
 function safeRenderSchedule() {
   try { renderScheduleView(); } catch (err) {
     dbg('renderScheduleView ERROR: ' + err.message, 'error');
@@ -1546,6 +1631,7 @@ function renderScheduleView() {
   var entries  = getEntries(selectedDate);
   var dayStart = new Date(selectedDate + 'T00:00:00').getTime();
 
+
   var rangeStartHour = 7, rangeEndHour = 20;
 
   if (selectedDate === todayStr()) {
@@ -1579,6 +1665,7 @@ function renderScheduleView() {
   grid.innerHTML = '';
   grid.style.height = totalHeight + 'px';
 
+
   for (var h = rangeStartHour; h <= rangeEndHour; h++) {
     var y = (h - rangeStartHour) * 60 * pxpm;
 
@@ -1600,6 +1687,7 @@ function renderScheduleView() {
     }
   }
 
+
   var liveEntry = null;
   if (timer.running && selectedDate === todayStr()) {
     liveEntry = { id: '__live__', startTs: timer.startTs, endTs: Date.now() };
@@ -1612,6 +1700,7 @@ function renderScheduleView() {
     var block = buildScheduleBlock(entry, rangeStartMs, pxpm, ci.col, ci.totalCols);
     if (block) grid.appendChild(block);
   });
+
 
   if (liveEntry) {
     var ci      = cols['__live__'] || { col: 0, totalCols: 1 };
@@ -1635,6 +1724,7 @@ function renderScheduleView() {
     live.appendChild(ll);
     grid.appendChild(live);
   }
+
 
   if (selectedDate === todayStr()) {
     var nowMin   = (Date.now() - rangeStartMs) / 60000;
@@ -1690,10 +1780,12 @@ function buildScheduleBlock(entry, rangeStartMs, pxpm, col, totalCols) {
   botH.addEventListener('mousedown', function(e) { onHandleMousedown(e, entry, 'bot'); });
   block.appendChild(botH);
 
+
   block.addEventListener('mousedown', function(e) {
     if (e.target.classList.contains('sched-handle') || e.target.closest('.sched-handle')) return;
     onBlockMove(e, entry);
   });
+
 
   block.addEventListener('contextmenu', function(e) {
     e.preventDefault(); e.stopPropagation();
@@ -1736,12 +1828,14 @@ function onHandleMousedown(e, entry, handle) {
       if (ne > origStart + SNAP_MS) entry.endTs = ne;
     }
 
+
     if (block) {
       var om = (entry.startTs - schedState.rangeStartMs) / 60000;
       var dm = Math.max(1, (entry.endTs - entry.startTs) / 60000);
       block.style.top    = (om * schedState.pxPerMin) + 'px';
       block.style.height = Math.max(6, dm * schedState.pxPerMin) + 'px';
     }
+
 
     var card = document.querySelector('.entry-card[data-id="' + entry.id + '"]');
     if (card) {
@@ -1799,6 +1893,7 @@ function showCtxMenu(e, entry) {
     m.appendChild(div);
   });
 
+
   var x = e.clientX, y = e.clientY;
   m.classList.remove('hidden');
   var rect = m.getBoundingClientRect();
@@ -1850,6 +1945,7 @@ function onBlockMove(e, entry) {
     var deltaMs  = deltaMin * 60000;
     var newStart = origStart + deltaMs;
     var newEnd   = newStart + dur;
+
 
     if (newStart < dayStart) { newStart = dayStart; newEnd = newStart + dur; }
     if (newEnd > dayStart + 86400000) { newEnd = dayStart + 86400000; newStart = newEnd - dur; }
@@ -1915,6 +2011,8 @@ function schedScrollToNow() {
   var nowMin = (Date.now() - schedState.rangeStartMs) / 60000;
   panel.scrollTop = Math.max(0, nowMin * schedState.pxPerMin - panel.clientHeight / 3);
 }
+
+
 
 var _quickEntry = null;
 
@@ -2034,6 +2132,10 @@ function showQuickEntry(cx, cy, startTs, endTs) {
   document.addEventListener('mousedown', _onQuickEntryOutside, true);
 }
 
+
+
+
+
 async function finishDay() {
   var cfg     = getJiraCfg();
   var entries = getEntries(selectedDate);
@@ -2104,6 +2206,10 @@ async function finishDay() {
   }
 }
 
+
+
+
+
 function loadTasks() {
   var resolved = false;
   dbg('loadTasks() → calling PluginAPI.getTasks()…');
@@ -2151,6 +2257,10 @@ function loadTasks() {
   }
 }
 
+
+
+
+
 function applySchedFontSize(size) {
   document.querySelectorAll('.sched-entry-label').forEach(function(el) {
     el.style.fontSize = size + 'px';
@@ -2169,6 +2279,7 @@ async function init() {
 
   await loadStore();
 
+
   if (!(store['jira-config'] && store['jira-config'].baseUrl)) {
     var _detected = await detectSpJiraConfig();
     if (_detected) {
@@ -2178,9 +2289,12 @@ async function init() {
     }
   }
 
+
   fetchJiraAssigned();
 
+
   applyTheme();
+
 
   var saved = store['timer-state'];
   if (saved && saved.running && saved.taskId) {
@@ -2191,6 +2305,7 @@ async function init() {
     tickTimer();
   }
 
+
   dbg('selectDate + renderPins…');
   selectDate(todayStr());
   renderPins();
@@ -2199,9 +2314,13 @@ async function init() {
   document.getElementById('today-tasks-count').textContent = '…';
   dbg('UI rendered, wiring listeners…', 'ok');
 
+
   setTimeout(schedScrollToNow, 200);
 
+
   loadTasks();
+
+
 
   var taskInp = document.getElementById('task-input');
   taskInp.addEventListener('input', function() {
@@ -2217,6 +2336,7 @@ async function init() {
     if (!e.target.closest('.ctx-menu'))
       hideCtxMenu();
   });
+
 
   document.getElementById('today-tasks-toggle').addEventListener('click', function() {
     document.getElementById('today-task-list').classList.toggle('hidden');
@@ -2266,6 +2386,7 @@ async function init() {
   document.getElementById('today-btn').addEventListener('click', function() { selectDate(todayStr()); });
 
   document.getElementById('finish-day-btn').addEventListener('click', finishDay);
+
 
   document.getElementById('settings-btn').addEventListener('click', function() {
     var ps  = getPinSettings();
@@ -2365,6 +2486,7 @@ async function init() {
     applySchedFontSize(ss.fontSize);
   });
 
+
   document.getElementById('zoom-in').addEventListener('click', function() {
     var ss = getSchedSettings();
     if (ss.zoomIdx < ZOOM_LEVELS.length - 1) { ss.zoomIdx++; saveSchedSettings(ss); safeRenderSchedule(); updateZoomLabel(); }
@@ -2373,6 +2495,7 @@ async function init() {
     var ss = getSchedSettings();
     if (ss.zoomIdx > 0) { ss.zoomIdx--; saveSchedSettings(ss); safeRenderSchedule(); updateZoomLabel(); }
   });
+
 
   var resizeHandle = document.getElementById('sched-resize-handle');
   var rightPanel   = document.getElementById('right-panel');
@@ -2394,12 +2517,14 @@ async function init() {
     document.addEventListener('mouseup', onUp);
   });
 
+
   (function() {
     var ss = getSchedSettings();
     if (ss.panelWidth) rightPanel.style.width = ss.panelWidth + 'px';
     applySchedFontSize(ss.fontSize);
     updateZoomLabel();
   })();
+
 
   document.getElementById('add-pin-btn').addEventListener('click', function() {
     document.getElementById('pin-search-input').value = '';
@@ -2417,6 +2542,7 @@ async function init() {
   document.getElementById('pin-search-input').addEventListener('input', function(e) { renderPinSearch(e.target.value); });
 
   document.getElementById('schedule-grid').addEventListener('click', onScheduleGridClick);
+
 
   try {
     PluginAPI.registerHook(PluginAPI.Hooks.PERSISTED_DATA_CHANGED, async function() {
@@ -2480,6 +2606,9 @@ async function init() {
 
   dbg('init() complete', 'ok');
 }
+
+
+
 
 var _initDone = false;
 var _syncingToSP = false;
