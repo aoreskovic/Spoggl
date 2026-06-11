@@ -1,0 +1,12 @@
+# Super Productivity source — local reference only, not tracked
+super-productivity-master/
+
+# Plugin build artifacts
+spoggl/*.zip
+
+# OS & editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

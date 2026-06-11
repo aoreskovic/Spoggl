@@ -1,0 +1,2506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Spoggl</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--font-primary-stack, sans-serif);
+  background: var(--bg, #fafafa);
+  color: var(--text-color, #212121);
+  font-size: 14px;
+}
+
+/* ── Dark theme ── */
+html.dark {
+  --bg: #1e1e2e; --bg-darker: #181825; --card-bg: #252535;
+  --text-color: #cdd6f4; --text-color-muted: #8895b0;
+  --divider-color: #313244; --c-primary: #cba6f7;
+}
+html.dark .right-panel { background: #181825 !important; border-color: #313244; }
+html.dark .sched-hdr { background: #181825 !important; color: #8895b0; border-color: #313244; }
+html.dark .sched-hour { border-color: #3b3b52; }
+html.dark .sched-half { border-color: #2a2a3a; }
+html.dark .sched-hour-label { background: rgba(24,24,37,.9); color: #8895b0; }
+html.dark .sched-entry-block { background: rgba(203,166,247,.14); border-color: #cba6f7; }
+html.dark .sched-entry-block.st-synced { background: rgba(166,227,161,.13); border-color: #a6e3a1; }
+html.dark .sched-entry-block.st-error  { background: rgba(243,139,168,.13); border-color: #f38ba8; }
+html.dark .sched-entry-label { color: #cba6f7; }
+html.dark .sched-entry-block.st-synced .sched-entry-label { color: #a6e3a1; }
+html.dark .sched-entry-block.st-error  .sched-entry-label { color: #f38ba8; }
+html.dark .sched-handle::after { background: #cba6f7; }
+html.dark .sched-entry-block.st-synced .sched-handle::after { background: #a6e3a1; }
+html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba8; }
+.hidden { display: none !important; }
+
+/* ── Two-panel layout ── */
+.app-layout { display: flex; height: 100vh; min-height: 0; overflow: hidden; }
+
+.left-panel {
+  flex: 1; min-width: 0; overflow-y: auto; overflow-x: hidden;
+  padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+
+.right-panel {
+  width: 248px; flex-shrink: 0;
+  border-left: 2px solid var(--divider-color, #e0e0e0);
+  overflow-y: auto; overflow-x: hidden;
+  background: var(--bg, #fafafa);
+  position: relative;
+}
+
+/* ── Omnibar ── */
+.omnibar {
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--divider-color, #e0e0e0);
+  border-radius: var(--card-border-radius, 4px);
+  padding: 10px 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.12);
+}
+.omnibar-row { display: flex; align-items: center; gap: 8px; }
+.task-search-wrap { flex: 1; position: relative; min-width: 0; }
+#task-input {
+  width: 100%; background: var(--bg, #fff);
+  border: 1px solid var(--divider-color, #e0e0e0);
+  border-radius: 4px; padding: 7px 10px;
+  color: var(--text-color, #212121);
+  font-family: inherit; font-size: 14px;
+}
+#task-input:focus { outline: none; border-color: var(--c-primary, #7b2ff7); }
+#task-input:disabled { opacity: .45; cursor: not-allowed; }
+
+.task-dropdown {
+  position: absolute; top: calc(100% + 2px); left: 0; right: 0;
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--divider-color, #e0e0e0);
+  border-radius: 4px; max-height: 240px; overflow-y: auto;
+  z-index: 200; box-shadow: 0 2px 8px rgba(0,0,0,.18);
+}
+.task-dd-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px; cursor: pointer;
+}
+.task-dd-item:hover { background: var(--bg-darker, #f5f5f5); }
+.jira-chip {
+  font-size: 11px; font-weight: 700;
+  color: var(--c-primary, #7b2ff7);
+  flex-shrink: 0; white-space: nowrap;
+}
+.task-dd-title { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.start-time-input {
+  width: 62px; text-align: center;
+  background: var(--bg, #fff);
+  border: 1px solid var(--divider-color, #e0e0e0);
+  border-radius: 4px; padding: 7px 4px;
+  color: var(--text-color, #212121);
+  font-family: monospace; font-size: 13px; flex-shrink: 0;
+}
+.start-time-input:focus { outline: none; border-color: var(--c-primary, #7b2ff7); }
+.start-time-input:disabled { opacity: .45; cursor: not-allowed; }
+
+#timer-display {
+  font-family: monospace; font-size: 20px; font-weight: 700;
+  min-width: 82px; text-align: center; letter-spacing: 1px; flex-shrink: 0;
+}
+#timer-display.running { color: var(--c-primary, #7b2ff7); }
+#start-stop-btn { flex-shrink: 0; }
+#start-stop-btn.btn-stop {
+  background: #f44336 !important; border-color: #f44336 !important; color: #fff !important;
+}
+
+/* ── Status bar ── */
+.status-bar {
+  display: flex; align-items: center; gap: 8px; padding: 6px 12px;
+  background: var(--bg-darker, #f5f5f5);
+  border: 1px solid var(--divider-color, #e0e0e0);
+  border-top: none; border-radius: 0 0 4px 4px;
+  font-size: 13px; margin-top: -8px;
+}
+.status-bar label { color: var(--text-color-muted, #757575); white-space: nowrap; }
+
+/* ── Day header ── */
+.day-header {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 8px;
+}
+.day-picker { display: flex; align-items: center; gap: 6px; }
+.nav-btn {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0; font-size: 17px; line-height: 1; border-radius: 4px;
+  border: 1px solid var(--divider-color, #e0e0e0);
+  background: var(--card-bg, #fff); cursor: pointer;
+}
+.nav-btn:hover { border-color: var(--c-primary, #7b2ff7); }
+#current-date-label { font-weight: 700; font-size: 13px; min-width: 152px; text-align: center; }
+.day-header-right { display: flex; align-items: center; gap: 8px; }
+.total-display { font-weight: 700; font-size: 15px; color: var(--c-primary, #7b2ff7); white-space: nowrap; }
+
+/* ── Pins bar ── */
+.pins-bar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-height: 32px; }
+.pins-label {
+  font-size: 11px; font-weight: 600;
+  color: var(--text-color-muted, #757575);
+  text-transform: uppercase; letter-spacing: .5px; flex-shrink: 0;
+}
+.pin-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 9px;
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--divider-color, #e0e0e0);
+  border-radius: 14px; cursor: pointer;
+  font-size: 12px; font-weight: 700;
+  max-width: 120px; overflow: hidden; white-space: nowrap; user-select: none;
+}
+.pin-chip:hover { border-color: var(--c-primary, #7b2ff7); }
+.pin-chip.active { border-color: var(--c-primary, #7b2ff7); background: var(--c-primary, #7b2ff7); color: #fff; }
+.pin-remove { background: none; border: none; cursor: pointer; color: inherit; font-size: 13px; padding: 0; line-height: 1; opacity: .6; flex-shrink: 0; }
+.pin-remove:hover { opacity: 1; }
+.add-pin-btn {
+  background: none; border: 1px dashed #bdbdbd;
+  border-radius: 14px; padding: 3px 10px; cursor: pointer;
+  color: #757575; font-size: 11px;
+}
+.add-pin-btn:hover { border-color: var(--c-primary, #7b2ff7); color: var(--c-primary, #7b2ff7); }
+/* Stacked pin layout */
+.pins-bar.stacked { flex-direction: column; align-items: stretch; gap: 3px; }
+.pin-row {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 8px; cursor: pointer; user-select: none;
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--divider-color, #e0e0e0);
+  border-radius: 4px; font-size: 12px;
+}
+.pin-row:hover { border-color: var(--c-primary, #7b2ff7); }
+.pin-row.active { border-color: var(--c-primary, #7b2ff7); background: var(--c-primary, #7b2ff7); color: #fff; }
+.pin-row-label { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pin-row-jira { font-weight: 700; font-size: 11px; flex-shrink: 0; color: var(--c-primary, #7b2ff7); }
+.pin-row.active .pin-row-jira { color: #fff; }
+
+/* ── Timeline (entry list) ── */
+.timeline-empty { text-align: center; color: #757575; padding: 24px 0; font-size: 13px; }
+.entry-card {
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--divider-color, #e0e0e0);
+  border-radius: var(--card-border-radius, 4px);
+  padding: 7px 10px; margin-bottom: 5px;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.entry-card:hover { box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+.entry-name { flex: 1; min-width: 100px; display: flex; align-items: center; gap: 6px; overflow: hidden; }
+.entry-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px; font-weight: 500; }
+.entry-jira { font-size: 11px; font-weight: 700; color: var(--c-primary, #7b2ff7); flex-shrink: 0; white-space: nowrap; }
+.time-range { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
+.ie {
+  font-family: monospace; font-size: 12px;
+  background: transparent; border: none; border-bottom: 1px solid transparent;
+  padding: 2px 3px; color: var(--text-color, #212121); cursor: pointer; border-radius: 2px;
+}
+.ie.time-ie { width: 44px; text-align: center; }
+.ie.dur-ie { width: 60px; text-align: center; color: #757575; }
+.ie:hover { border-bottom-color: #e0e0e0; background: var(--bg-darker, #f5f5f5); }
+.ie:focus { outline: none; border-bottom-color: var(--c-primary, #7b2ff7); background: var(--bg, #fff); }
+.ie.error { border-bottom-color: #f44336 !important; }
+.sep { color: #9e9e9e; font-size: 12px; }
+.status-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; white-space: nowrap; flex-shrink: 0; }
+.st-pending { background: rgba(255,152,0,.15); color: #e65100; }
+.st-synced  { background: rgba(76,175,80,.15);  color: #2e7d32; }
+.st-error   { background: rgba(244,67,54,.15);   color: #c62828; cursor: help; }
+.entry-actions { display: flex; gap: 2px; flex-shrink: 0; }
+.icon-btn { background: none; border: none; cursor: pointer; padding: 4px 6px; border-radius: 4px; color: #757575; font-size: 13px; line-height: 1; }
+.icon-btn:hover { background: var(--bg-darker, #f5f5f5); color: var(--text-color, #212121); }
+.icon-btn.del:hover { color: #f44336; }
+.entry-err-row { width: 100%; font-size: 11px; color: #f44336; padding: 1px 2px; }
+
+/* ── Today & Inbox task list (below timeline) ── */
+.today-tasks {
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--divider-color, #e0e0e0);
+  border-radius: var(--card-border-radius, 4px);
+  overflow: hidden; margin-top: 4px;
+  flex: 1; display: flex; flex-direction: column; min-height: 180px;
+}
+.today-tasks-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 12px; cursor: pointer; user-select: none;
+  background: var(--bg-darker, #f5f5f5);
+  border-bottom: 1px solid var(--divider-color, #e0e0e0);
+}
+.today-tasks-hdr > span:first-child {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .5px; color: #616161;
+}
+.tt-count {
+  font-size: 11px; color: #757575; background: #e0e0e0;
+  border-radius: 10px; padding: 1px 7px;
+}
+.today-task-list { overflow-y: auto; flex: 1; min-height: 0; }
+.tt-section {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+  color: #9e9e9e; padding: 5px 12px 2px;
+  background: var(--bg, #fafafa);
+  border-bottom: 1px solid var(--divider-color, #e0e0e0);
+}
+.tt-section-toggle { cursor: pointer; user-select: none; }
+.tt-section-toggle:hover { color: var(--text-color, #333); }
+.tt-chevron { margin-right: 4px; font-size: 9px; display: inline-block; }
+.tt-section-count { float: right; font-size: 10px; opacity: 0.55; font-weight: normal; margin-top: 1px; }
+.today-task-item {
+  display: flex; align-items: center; gap: 8px; padding: 7px 12px; cursor: pointer;
+  border-bottom: 1px solid var(--divider-color, #e0e0e0);
+}
+.today-task-item:last-child { border-bottom: none; }
+.today-task-item:hover { background: var(--bg-darker, #f5f5f5); }
+.today-task-item.is-active {
+  background: rgba(123,47,247,.06);
+  border-left: 3px solid var(--c-primary, #7b2ff7);
+  padding-left: 9px;
+}
+.tt-play { font-size: 9px; color: var(--c-primary, #7b2ff7); flex-shrink: 0; opacity: .5; }
+.today-task-item:hover .tt-play { opacity: 1; }
+
+/* ── Schedule panel (right) ── */
+.sched-hdr {
+  padding: 8px 10px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+  color: var(--text-color-muted, #616161);
+  border-bottom: 1px solid var(--divider-color, #e0e0e0);
+  background: var(--bg-darker, #f5f5f5);
+  position: sticky; top: 0; z-index: 10;
+}
+.schedule-grid { position: relative; padding-bottom: 20px; }
+.sched-hour {
+  position: absolute; left: 0; right: 0;
+  border-top: 1px solid #c8c8c8;
+  pointer-events: none;
+}
+.sched-hour-label {
+  display: inline-block; width: 36px;
+  font-size: 9px; color: #666;
+  padding: 1px 3px; user-select: none; line-height: 1.4;
+  background: rgba(255,255,255,.85);
+}
+.sched-half {
+  position: absolute; left: 0; right: 0;
+  border-top: 1px dashed #e0e0e0;
+  pointer-events: none;
+}
+.sched-now-line {
+  position: absolute; left: 0; right: 0; height: 2px;
+  background: #f44336; z-index: 5; pointer-events: none;
+}
+.sched-now-dot {
+  position: absolute; left: 36px; top: -4px;
+  width: 8px; height: 8px; border-radius: 50%; background: #f44336;
+}
+.sched-entry-block {
+  position: absolute; left: 40px; right: auto;
+  border-radius: 3px; overflow: visible;
+  cursor: grab; user-select: none; min-height: 6px;
+  background: rgba(123,47,247,.13);
+  border: 1.5px solid var(--c-primary, #7b2ff7);
+}
+.sched-entry-block.moving { cursor: grabbing; }
+.sched-entry-block:hover { box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+.sched-entry-block.st-synced { background: rgba(76,175,80,.13); border-color: #4caf50; }
+.sched-entry-block.st-error  { background: rgba(244,67,54,.10); border-color: #f44336; }
+.sched-entry-block.live {
+  background: rgba(123,47,247,.06); border-style: dashed; pointer-events: none;
+}
+.sched-entry-block.dragging { opacity: .8; box-shadow: 0 4px 12px rgba(0,0,0,.2); z-index: 20; }
+.sched-entry-label {
+  font-size: var(--sched-font-size, 9px); font-weight: 600; padding: 2px 4px;
+  white-space: normal; word-break: break-word; overflow: hidden;
+  color: var(--c-primary, #7b2ff7); pointer-events: none; line-height: 1.3;
+}
+.sched-entry-block.st-synced .sched-entry-label { color: #2e7d32; }
+.sched-entry-block.st-error  .sched-entry-label { color: #c62828; }
+.sched-handle {
+  position: absolute; left: 0; right: 0; height: 9px;
+  cursor: ns-resize; z-index: 3;
+  display: flex; align-items: center; justify-content: center;
+}
+.sched-handle-top { top: -1px; }
+.sched-handle-bot { bottom: -1px; }
+.sched-handle::after {
+  content: ''; display: block; width: 20px; height: 2px;
+  border-radius: 1px; background: #7b2ff7; opacity: .35;
+}
+.sched-entry-block.st-synced .sched-handle::after { background: #4caf50; }
+.sched-entry-block.st-error  .sched-handle::after { background: #f44336; }
+
+/* ── Panel resize handle ── */
+.sched-resize-handle {
+  position: absolute; left: -4px; top: 0; bottom: 0; width: 8px;
+  cursor: col-resize; z-index: 50; border-radius: 4px;
+}
+.sched-resize-handle:hover, .sched-resize-handle.resizing { background: rgba(123,47,247,.35); }
+
+/* ── Schedule zoom bar ── */
+.sched-hdr { display: flex; align-items: center; justify-content: space-between; }
+.sched-zoom { display: flex; align-items: center; gap: 4px; }
+.sched-zoom-btn {
+  background: none; border: 1px solid var(--divider-color, #e0e0e0);
+  border-radius: 3px; width: 20px; height: 20px; cursor: pointer; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-color-muted, #616161);
+}
+.sched-zoom-btn:hover { border-color: var(--c-primary, #7b2ff7); color: var(--c-primary, #7b2ff7); }
+.sched-zoom-lbl { font-size: 10px; color: var(--text-color-muted, #616161); min-width: 26px; text-align: center; }
+
+/* ── Context menu ── */
+.ctx-menu {
+  position: fixed; z-index: 2000;
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--divider-color, #e0e0e0);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.22);
+  min-width: 170px; padding: 4px 0;
+}
+.ctx-item {
+  padding: 8px 14px; cursor: pointer; font-size: 13px;
+  display: flex; align-items: center; gap: 9px; color: var(--text-color, #212121);
+}
+.ctx-item:hover { background: var(--bg-darker, #f5f5f5); }
+.ctx-item.danger { color: #e53935; }
+
+/* ── Settings panel improvements ── */
+.settings-section { margin-bottom: 20px; }
+.settings-section-title {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px;
+  color: var(--text-color-muted, #757575); margin-bottom: 10px;
+  padding-bottom: 5px; border-bottom: 1px solid var(--divider-color, #e0e0e0);
+}
+.radio-group { display: flex; flex-direction: column; gap: 7px; }
+.radio-group.horiz { flex-direction: row; gap: 16px; }
+.radio-lbl {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 13px; color: var(--text-color, #212121); cursor: pointer;
+}
+.settings-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.settings-row label { font-size: 12px; color: var(--text-color-muted, #757575); min-width: 80px; }
+.settings-row select {
+  flex: 1; background: var(--bg, #fff);
+  border: 1px solid var(--divider-color, #e0e0e0);
+  border-radius: 4px; padding: 5px 8px;
+  color: var(--text-color, #212121); font-family: inherit; font-size: 13px;
+}
+
+/* ── Overlays ── */
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.45);
+  z-index: 500; display: flex; align-items: flex-start; justify-content: center;
+  padding: 24px 16px; overflow-y: auto;
+}
+.panel {
+  background: var(--card-bg, #fff);
+  border-radius: var(--card-border-radius, 4px);
+  padding: 24px; width: 100%; max-width: 400px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.28);
+}
+.panel h2 { font-size: 16px; margin-bottom: 16px; }
+.form-row { margin-bottom: 12px; }
+.form-row label {
+  display: block; font-size: 11px; font-weight: 700; color: #757575;
+  text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px;
+}
+.form-row input {
+  width: 100%; background: var(--bg, #fff);
+  border: 1px solid var(--divider-color, #e0e0e0);
+  border-radius: 4px; padding: 8px 10px;
+  color: var(--text-color, #212121); font-family: inherit; font-size: 14px;
+}
+.form-row input:focus { outline: none; border-color: var(--c-primary, #7b2ff7); }
+.row-btns { display: flex; gap: 8px; margin-top: 16px; }
+.pin-results { max-height: 220px; overflow-y: auto; margin-top: 8px; }
+
+/* ── Debug panel ── */
+.dbg-panel {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 11px;
+  background: #1e1e1e;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+.dbg-bar {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 8px;
+  background: #2d2d2d;
+  cursor: pointer; user-select: none;
+  border-bottom: 1px solid #444;
+}
+.dbg-bar-title { color: #e0e0e0; font-weight: 700; font-size: 11px; flex: 1; }
+.dbg-bar-count {
+  background: #444; color: #ccc; border-radius: 10px;
+  padding: 0 6px; font-size: 10px;
+}
+.dbg-btn {
+  background: #444; border: none; cursor: pointer; color: #ccc;
+  font-size: 10px; padding: 2px 7px; border-radius: 3px;
+  font-family: inherit;
+}
+.dbg-btn:hover { background: #555; color: #fff; }
+.dbg-log {
+  max-height: 160px; overflow-y: auto;
+  padding: 4px 0;
+}
+.dbg-row {
+  padding: 1px 8px; line-height: 1.5;
+  border-bottom: 1px solid #2a2a2a;
+  white-space: pre-wrap; word-break: break-all;
+}
+.dbg-row:last-child { border-bottom: none; }
+.dbg-ts { color: #555; margin-right: 4px; }
+.dbg-info  .dbg-msg { color: #80cbc4; }
+.dbg-warn  .dbg-msg { color: #ffcc02; }
+.dbg-error .dbg-msg { color: #ef9a9a; }
+.dbg-ok    .dbg-msg { color: #a5d6a7; }
+.dbg-state .dbg-msg { color: #ce93d8; }
+.dbg-empty { color: #555; padding: 8px; text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- ── LEFT PANEL ── -->
+  <div class="left-panel">
+
+    <!-- Omnibar -->
+    <div class="omnibar">
+      <div class="omnibar-row">
+        <div class="task-search-wrap">
+          <input id="task-input" type="text" placeholder="Search or select task…" autocomplete="off">
+          <div id="task-dropdown" class="task-dropdown hidden"></div>
+        </div>
+        <input id="start-time-input" class="start-time-input" type="text" placeholder="--:--" maxlength="5">
+        <div id="timer-display">00:00:00</div>
+        <button id="start-stop-btn" class="btn-primary">▶ Start</button>
+      </div>
+    </div>
+
+    <!-- Status bar (visible while timer runs) -->
+    <div id="status-bar" class="status-bar hidden">
+      <label>Task status:</label>
+      <select id="status-select" style="font-size:13px;">
+        <option value="">Don't change</option>
+      </select>
+    </div>
+
+    <!-- Day header -->
+    <div class="day-header">
+      <div class="day-picker">
+        <button id="prev-day" class="nav-btn" title="Previous day">‹</button>
+        <span id="current-date-label">---</span>
+        <button id="next-day" class="nav-btn" title="Next day">›</button>
+        <button id="today-btn" class="btn-outline">Today</button>
+      </div>
+      <div class="day-header-right">
+        <span id="total-display" class="total-display">Total: 0m</span>
+        <button id="finish-day-btn" class="btn-primary">Finish Day</button>
+        <button id="settings-btn" title="Jira settings" style="font-size:16px;padding:4px 8px;background:none;border:1px solid #e0e0e0;border-radius:4px;cursor:pointer;">⚙</button>
+      </div>
+    </div>
+
+    <!-- Pins bar -->
+    <div class="pins-bar">
+      <span class="pins-label">Pins:</span>
+      <div id="pin-chips"></div>
+      <button id="add-pin-btn" class="add-pin-btn">+ Pin task</button>
+    </div>
+
+    <!-- Timeline (logged entries for selected day) -->
+    <div id="timeline"></div>
+
+    <!-- Debug panel -->
+    <div class="dbg-panel" id="dbg-panel">
+      <div class="dbg-bar" id="dbg-bar">
+        <span class="dbg-bar-title">🐛 Debug</span>
+        <span class="dbg-bar-count" id="dbg-count">0</span>
+        <button class="dbg-btn" id="dbg-state-btn">State</button>
+        <button class="dbg-btn" id="dbg-copy-btn">Copy</button>
+        <button class="dbg-btn" id="dbg-clear-btn">Clear</button>
+        <span style="color:#666;font-size:10px;" id="dbg-toggle-lbl">▼</span>
+      </div>
+      <div class="dbg-log" id="dbg-log">
+        <div class="dbg-empty">Waiting for init…</div>
+      </div>
+    </div>
+
+    <!-- Today & Inbox quick-start (below logged entries) -->
+    <div class="today-tasks">
+      <div class="today-tasks-hdr" id="today-tasks-toggle">
+        <span>Tasks — Today &amp; Other</span>
+        <span class="tt-count" id="today-tasks-count">…</span>
+      </div>
+      <div class="today-task-list" id="today-task-list">
+        <div style="padding:12px;text-align:center;font-size:13px;color:#9e9e9e">Loading…</div>
+      </div>
+    </div>
+
+  </div><!-- /left-panel -->
+
+  <!-- ── RIGHT PANEL: visual day schedule ── -->
+  <div class="right-panel" id="right-panel">
+    <div class="sched-resize-handle" id="sched-resize-handle"></div>
+    <div class="sched-hdr">
+      <span>Day View — <span id="sched-date-label"></span></span>
+      <div class="sched-zoom">
+        <button class="sched-zoom-btn" id="zoom-out" title="Zoom out">−</button>
+        <span class="sched-zoom-lbl" id="zoom-lbl">1×</span>
+        <button class="sched-zoom-btn" id="zoom-in" title="Zoom in">+</button>
+      </div>
+    </div>
+    <div class="schedule-grid" id="schedule-grid"></div>
+  </div>
+
+</div><!-- /app-layout -->
+
+<!-- Right-click context menu -->
+<div id="ctx-menu" class="ctx-menu hidden"></div>
+
+<!-- Settings overlay -->
+<div id="settings-overlay" class="overlay hidden">
+  <div class="panel" style="max-width:380px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <h2 style="margin:0">Settings</h2>
+      <button id="close-cfg" class="btn-outline" style="padding:4px 12px">Close</button>
+    </div>
+
+    <!-- Pinned Tasks -->
+    <div class="settings-section">
+      <div class="settings-section-title">Pinned Tasks — Layout</div>
+      <div class="radio-group horiz">
+        <label class="radio-lbl"><input type="radio" name="pin-layout" id="pin-layout-compact" value="compact"> Compact chips</label>
+        <label class="radio-lbl"><input type="radio" name="pin-layout" id="pin-layout-stacked" value="stacked"> Stacked list</label>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">Pinned Tasks — Label</div>
+      <div class="radio-group">
+        <label class="radio-lbl"><input type="radio" name="pin-label" id="pin-label-tag" value="tag"> Tag / Jira ID only</label>
+        <label class="radio-lbl"><input type="radio" name="pin-label" id="pin-label-tagname" value="tagname"> Tag + full task name</label>
+        <label class="radio-lbl"><input type="radio" name="pin-label" id="pin-label-name" value="name"> Task name only</label>
+      </div>
+    </div>
+
+    <!-- Day View -->
+    <div class="settings-section">
+      <div class="settings-section-title">Day View</div>
+      <div class="settings-row">
+        <label>Font size</label>
+        <select id="sched-fontsize">
+          <option value="8">8px</option>
+          <option value="9" selected>9px (default)</option>
+          <option value="10">10px</option>
+          <option value="11">11px</option>
+          <option value="12">12px</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Jira -->
+    <div class="settings-section" style="margin-bottom:0">
+      <div class="settings-section-title">Jira Worklog</div>
+      <div class="form-row">
+        <label>Base URL</label>
+        <input id="cfg-url" type="text" placeholder="https://yourcompany.atlassian.net">
+      </div>
+      <div class="form-row">
+        <label>Email</label>
+        <input id="cfg-email" type="email" placeholder="user@company.com">
+      </div>
+      <div class="form-row">
+        <label>API Token</label>
+        <input id="cfg-token" type="password" placeholder="Jira API token">
+      </div>
+      <div style="display:flex;gap:6px;margin-top:6px">
+        <button id="save-cfg" class="btn-primary" style="flex:1">Save</button>
+        <button id="jira-detect-btn" class="btn-outline" style="flex:1">Auto-detect from SP</button>
+        <button id="jira-test-btn" class="btn-outline" style="flex:1">Test connection</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Pin search overlay -->
+<div id="pin-overlay" class="overlay hidden">
+  <div class="panel">
+    <h2>Pin Task</h2>
+    <div class="form-row">
+      <input id="pin-search-input" type="text" placeholder="Search task…" autocomplete="off">
+    </div>
+    <div id="pin-results" class="pin-results"></div>
+    <div class="row-btns">
+      <button id="close-pin" class="btn-outline">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────
+// UTILS
+// ─────────────────────────────────────────
+
+function uuid() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
+function pad(n) { return String(n).padStart(2, '0'); }
+function todayStr() { return new Date().toISOString().slice(0, 10); }
+
+function addDays(dateStr, n) {
+  const d = new Date(dateStr + 'T12:00:00');
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+function formatDateLabel(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  return `${days[d.getDay()]}, ${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
+}
+
+function tsToHHMM(ts) {
+  const d = new Date(ts);
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function msToHHMMSS(ms) {
+  ms = Math.max(0, ms);
+  const s = Math.floor(ms / 1000);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  return `${pad(h)}:${pad(m)}:${pad(s % 60)}`;
+}
+
+function msToDur(ms) {
+  ms = Math.max(0, ms);
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
+function parseDur(str) {
+  str = str.trim().toLowerCase();
+  let ms = 0;
+  const hm = str.match(/(\d+(?:\.\d+)?)\s*h/);
+  const mm = str.match(/(\d+)\s*m(?!s)/);
+  if (hm) ms += parseFloat(hm[1]) * 3600000;
+  if (mm) ms += parseInt(mm[1]) * 60000;
+  return ms > 0 ? ms : null;
+}
+
+function parseHHMM(str) {
+  const m = str.match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return null;
+  const h = parseInt(m[1]), min = parseInt(m[2]);
+  if (h > 23 || min > 59) return null;
+  return [h, min];
+}
+
+function hhmmToTs(hhmm, dateStr) {
+  const p = parseHHMM(hhmm);
+  if (!p) return null;
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setHours(p[0], p[1], 0, 0);
+  return d.getTime();
+}
+
+function jiraTs(ts) {
+  const d   = new Date(ts);
+  const off = -d.getTimezoneOffset();
+  const s   = off >= 0 ? '+' : '-';
+  const a   = Math.abs(off);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` +
+         `T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.000` +
+         `${s}${pad(Math.floor(a / 60))}${pad(a % 60)}`;
+}
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ─────────────────────────────────────────
+// DEBUG
+// ─────────────────────────────────────────
+
+var _dbgEntries = [];
+var _dbgOpen    = true;
+
+function dbg(msg, type) {
+  type = type || 'info';
+  var now = new Date();
+  var ts  = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds()) +
+            '.' + String(now.getMilliseconds()).padStart(3, '0');
+  _dbgEntries.push({ ts: ts, msg: msg, type: type });
+
+  var log = document.getElementById('dbg-log');
+  if (log) {
+    // Remove placeholder if present
+    var empty = log.querySelector('.dbg-empty');
+    if (empty) log.removeChild(empty);
+
+    var row = document.createElement('div');
+    row.className = 'dbg-row dbg-' + type;
+    row.innerHTML = '<span class="dbg-ts">' + ts + '</span><span class="dbg-msg">' + String(msg).replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</span>';
+    log.appendChild(row);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  var cnt = document.getElementById('dbg-count');
+  if (cnt) cnt.textContent = _dbgEntries.length;
+}
+
+function _dbgDumpState() {
+  dbg('--- STATE DUMP ---', 'state');
+  dbg('allTasks: ' + allTasks.length + ' loaded', 'state');
+  dbg('timer.running: ' + timer.running, 'state');
+  if (timer.running) {
+    dbg('  taskTitle: ' + timer.taskTitle, 'state');
+    dbg('  jiraId: ' + timer.jiraId, 'state');
+    dbg('  startTs: ' + (timer.startTs ? new Date(timer.startTs).toLocaleTimeString() : 'null'), 'state');
+  }
+  dbg('selectedDate: ' + selectedDate, 'state');
+  dbg('store keys: ' + Object.keys(store).join(', '), 'state');
+  dbg('entries today: ' + getEntries(selectedDate).length, 'state');
+  if (allTasks.length > 0) {
+    dbg('first task: ' + allTasks[0].title + ' | projectId:' + allTasks[0].projectId + ' | dueDay:' + allTasks[0].dueDay + ' | tagIds:' + JSON.stringify(allTasks[0].tagIds), 'state');
+  }
+  // Dump PluginAPI surface so we know what's available
+  try {
+    var api = window.PluginAPI;
+    var methods = Object.getOwnPropertyNames(api).filter(function(k) { return typeof api[k] === 'function'; });
+    dbg('PluginAPI methods: ' + methods.join(', '), 'state');
+    var hooks = api.Hooks ? Object.keys(api.Hooks).join(', ') : '(no Hooks obj)';
+    dbg('PluginAPI.Hooks: ' + hooks, 'state');
+  } catch(e) { dbg('PluginAPI dump error: ' + e, 'state'); }
+  dbg('SP actions seen: ' + Array.from(_spActionTypes).join(', '), 'state');
+  dbg('--- END DUMP ---', 'state');
+}
+
+var _spActionTypes = new Set();
+
+function _dbgCopy() {
+  var text = _dbgEntries.map(function(e) { return '[' + e.ts + '][' + e.type + '] ' + e.msg; }).join('\n');
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).catch(function() { _dbgCopyFallback(text); });
+    } else { _dbgCopyFallback(text); }
+  } catch(_) { _dbgCopyFallback(text); }
+}
+function _dbgCopyFallback(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try { document.execCommand('copy'); } catch(_) {}
+  document.body.removeChild(ta);
+}
+
+// Confirm script is running immediately
+dbg('Script parsed. PluginAPI = ' + typeof PluginAPI, typeof PluginAPI === 'object' ? 'ok' : 'error');
+
+// Catch any uncaught JS errors into the debug panel
+window.onerror = function(msg, src, line, col, err) {
+  dbg('UNCAUGHT ERROR line ' + line + ': ' + msg, 'error');
+  return false;
+};
+window.addEventListener('unhandledrejection', function(e) {
+  dbg('UNHANDLED REJECTION: ' + ((e.reason && e.reason.message) || String(e.reason)), 'error');
+});
+
+// Wire debug buttons after DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('dbg-bar').addEventListener('click', function() {
+    _dbgOpen = !_dbgOpen;
+    document.getElementById('dbg-log').style.display = _dbgOpen ? '' : 'none';
+    document.getElementById('dbg-toggle-lbl').textContent = _dbgOpen ? '▼' : '▶';
+  });
+  document.getElementById('dbg-state-btn').addEventListener('click', function(e) {
+    e.stopPropagation(); _dbgDumpState();
+  });
+  document.getElementById('dbg-copy-btn').addEventListener('click', function(e) {
+    e.stopPropagation(); _dbgCopy();
+    dbg('Log copied to clipboard', 'ok');
+  });
+  document.getElementById('dbg-clear-btn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    _dbgEntries = [];
+    document.getElementById('dbg-log').innerHTML = '<div class="dbg-empty">Cleared.</div>';
+    document.getElementById('dbg-count').textContent = '0';
+  });
+});
+
+// ─────────────────────────────────────────
+// THEME
+// ─────────────────────────────────────────
+
+function applyTheme() {
+  var dark = false;
+  try {
+    // Try reading SP parent frame's background colour
+    var bg = getComputedStyle(window.parent.document.body).backgroundColor;
+    var m  = bg.match(/\d+/g);
+    if (m && m.length >= 3) {
+      dark = (parseInt(m[0]) * 299 + parseInt(m[1]) * 587 + parseInt(m[2]) * 114) / 1000 < 128;
+    }
+  } catch(_) {
+    dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  document.documentElement.classList.toggle('dark', dark);
+  dbg('Theme: ' + (dark ? 'dark' : 'light'), 'ok');
+}
+
+// ─────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────
+
+let store = {};
+let allTasks = [];
+let selectedDate = todayStr();
+
+const timer = {
+  running: false, taskId: null, taskTitle: null,
+  jiraId: null, startTs: null, entryId: null,
+};
+let timerInterval = null;
+let pendingStartTs = null;
+
+const PX_PER_MIN = 1.5;
+const schedState = { rangeStartMs: 0, pxPerMin: PX_PER_MIN };
+let schedTickCount = 0;
+
+// ─────────────────────────────────────────
+// PERSISTENCE
+// ─────────────────────────────────────────
+
+async function loadStore() {
+  try {
+    var timeout = new Promise(function(res) { setTimeout(function() { res(null); }, 3000); });
+    var raw = await Promise.race([PluginAPI.loadSyncedData(), timeout]);
+    if (raw === null) { dbg('loadSyncedData TIMED OUT — store empty', 'error'); store = {}; return; }
+    store = raw ? JSON.parse(raw) : {};
+    dbg('loadStore OK, keys: [' + (Object.keys(store).join(', ') || '(none)') + ']', 'ok');
+  } catch (e) { store = {}; dbg('loadStore ERROR: ' + e.message, 'error'); }
+}
+
+let saveTimer = null;
+function scheduleSave(immediate) {
+  clearTimeout(saveTimer);
+  if (immediate) { persistNow(); return; }
+  saveTimer = setTimeout(persistNow, 500);
+}
+async function persistNow() {
+  try { await PluginAPI.persistDataSynced(JSON.stringify(store)); } catch (_) {}
+}
+
+function getDayLog(d) { return store['daily-log-' + d] || { date: d, entries: [] }; }
+function getEntries(d) { return getDayLog(d).entries || []; }
+function saveEntries(d, entries) { store['daily-log-' + d] = { date: d, entries }; scheduleSave(); }
+function getPinned() { return store['pinned-tasks'] || []; }
+function savePinned(ids) { store['pinned-tasks'] = ids; scheduleSave(); }
+function getJiraCfg() { return store['jira-config'] || null; }
+function saveJiraCfg(cfg) { store['jira-config'] = cfg; scheduleSave(true); }
+
+var _myJiraKeys = new Set();
+var _sectionCollapsed = { today: false, assigned: false, other: false };
+
+async function fetchJiraAssigned() {
+  var cfg = getJiraCfg();
+  if (!cfg || !cfg.baseUrl || !cfg.email || !cfg.apiToken) return;
+  try {
+    var jql = 'assignee=currentUser() AND resolution=Unresolved';
+    var url = cfg.baseUrl + '/rest/api/2/search?jql=' + encodeURIComponent(jql) + '&fields=key&maxResults=200';
+    var res = await fetch(url, {
+      headers: { 'Authorization': 'Basic ' + btoa(cfg.email + ':' + cfg.apiToken) }
+    });
+    if (!res.ok) { dbg('fetchJiraAssigned HTTP ' + res.status, 'warn'); return; }
+    var data = await res.json();
+    _myJiraKeys = new Set((data.issues || []).map(function(i) { return i.key; }));
+    dbg('fetchJiraAssigned: ' + _myJiraKeys.size + ' issues', 'ok');
+    renderTodayTasks();
+  } catch(e) { dbg('fetchJiraAssigned error: ' + e.message, 'warn'); }
+}
+
+async function detectSpJiraConfig() {
+  try {
+    var db = await new Promise(function(resolve, reject) {
+      var req = indexedDB.open('SUP_OPS');
+      req.onsuccess = function() { resolve(req.result); };
+      req.onerror   = function() { reject(req.error); };
+    });
+    var state = await new Promise(function(resolve, reject) {
+      var tx  = db.transaction('state_cache', 'readonly');
+      var req = tx.objectStore('state_cache').get('current');
+      req.onsuccess = function() { resolve(req.result && req.result.state); };
+      req.onerror   = function() { reject(req.error); };
+    });
+    db.close();
+    if (!state || !state.issueProvider) return null;
+    var entities = state.issueProvider.entities;
+    var jiraProvider = Object.values(entities).find(function(p) {
+      return p && p.issueProviderKey === 'JIRA' && p.isEnabled && p.host;
+    });
+    if (!jiraProvider) return null;
+    return { baseUrl: jiraProvider.host, email: jiraProvider.userName || '', apiToken: jiraProvider.password || '' };
+  } catch(e) {
+    dbg('detectSpJiraConfig failed: ' + e.message, 'warn');
+    return null;
+  }
+}
+function getPinSettings() { return Object.assign({ layout: 'compact', label: 'tag' }, store['pin-settings'] || {}); }
+function savePinSettings(s) { store['pin-settings'] = s; scheduleSave(); }
+const PX_PER_MIN_BASE = 1.5;
+const ZOOM_LEVELS = [0.5, 0.75, 1, 1.5, 2, 3];
+function getSchedSettings() { return Object.assign({ zoomIdx: 2, fontSize: 9, panelWidth: 248 }, store['sched-settings'] || {}); }
+function saveSchedSettings(s) { store['sched-settings'] = s; scheduleSave(); }
+function currentPxPerMin() { var ss = getSchedSettings(); return PX_PER_MIN_BASE * ZOOM_LEVELS[ss.zoomIdx]; }
+
+// ─────────────────────────────────────────
+// TIMER
+// ─────────────────────────────────────────
+
+// Apply running-timer UI state from the current `timer` object.
+// Called by startTimer(), crash recovery, and cross-window sync.
+function applyTimerUI() {
+  document.getElementById('task-input').value = (timer.taskTitle || '') + (timer.jiraId ? ' (' + timer.jiraId + ')' : '');
+  document.getElementById('start-time-input').value = timer.startTs ? tsToHHMM(timer.startTs) : '';
+  var btn = document.getElementById('start-stop-btn');
+  btn.textContent = '■ Stop';
+  btn.classList.remove('btn-primary');
+  btn.classList.add('btn-stop');
+  document.getElementById('timer-display').classList.add('running');
+  document.getElementById('status-bar').classList.remove('hidden');
+}
+
+function spStartTask(taskId) {
+  if (!taskId || taskId.startsWith('custom-')) return;
+  try {
+    _syncingToSP = true;
+    PluginAPI.dispatchAction({ type: '[Task] SetCurrentTask', id: taskId });
+    dbg('dispatchAction SetCurrentTask id=' + taskId, 'ok');
+  } catch(e) { dbg('dispatchAction failed: ' + e.message, 'warn'); }
+  setTimeout(function() { _syncingToSP = false; }, 300);
+}
+function spStopTask() {
+  try {
+    _syncingToSP = true;
+    PluginAPI.dispatchAction({ type: '[Task] SetCurrentTask', id: null });
+  } catch(e) {}
+  setTimeout(function() { _syncingToSP = false; }, 300);
+}
+
+function startTimer(taskId, taskTitle, jiraId) {
+  dbg('startTimer: "' + taskTitle + '" jira=' + (jiraId || 'none'), 'ok');
+  if (timer.running) stopTimer(false);
+
+  var startTs = pendingStartTs || Date.now();
+  pendingStartTs = null;
+
+  Object.assign(timer, { running: true, taskId: taskId, taskTitle: taskTitle, jiraId: jiraId, startTs: startTs, entryId: uuid() });
+  store['timer-state'] = Object.assign({}, timer);
+  scheduleSave();
+
+  applyTimerUI();
+  spStartTask(taskId);
+
+  clearInterval(timerInterval);
+  timerInterval = setInterval(tickTimer, 1000);
+  tickTimer();
+
+  renderTodayTasks();
+  renderPins();
+  safeRenderSchedule();
+}
+
+function stopTimer(saveEntry) {
+  if (saveEntry === undefined) saveEntry = true;
+  if (!timer.running) return;
+  dbg('stopTimer(save=' + saveEntry + ')');
+
+  clearInterval(timerInterval);
+  timerInterval = null;
+  schedTickCount = 0;
+
+  const endTs = Date.now();
+  if (saveEntry && (endTs - timer.startTs) >= 10000) {
+    const newEntry = {
+      id: timer.entryId, taskId: timer.taskId, jiraId: timer.jiraId,
+      title: timer.taskTitle, startTs: timer.startTs, endTs: endTs,
+      status: 'pending', errorMsg: null,
+    };
+    const entries = getEntries(selectedDate);
+    handleMergeAndAdd(newEntry, entries);
+  }
+
+  Object.assign(timer, { running: false, taskId: null, taskTitle: null, jiraId: null, startTs: null, entryId: null });
+  delete store['timer-state'];
+  scheduleSave(true);
+  spStopTask();
+
+  document.getElementById('timer-display').textContent = '00:00:00';
+  document.getElementById('timer-display').classList.remove('running');
+  document.getElementById('start-time-input').value = '';
+  const btn = document.getElementById('start-stop-btn');
+  btn.textContent = '▶ Start';
+  btn.classList.remove('btn-stop');
+  btn.classList.add('btn-primary');
+  document.getElementById('status-bar').classList.add('hidden');
+
+  renderTodayTasks();
+  renderPins();
+  updateTotal();
+  renderTimeline();
+}
+
+function tickTimer() {
+  if (!timer.running) return;
+  document.getElementById('timer-display').textContent = msToHHMMSS(Date.now() - timer.startTs);
+  updateTotal();
+  schedTickCount++;
+  if (schedTickCount % 40 === 0) updateSchedNow();
+}
+
+// ─────────────────────────────────────────
+// MERGE LOGIC
+// ─────────────────────────────────────────
+
+async function handleMergeAndAdd(newEntry, entries) {
+  const sameTask = entries.filter(function(e) { return e.taskId === newEntry.taskId; });
+
+  if (sameTask.length === 0) { addSorted(entries, newEntry); return; }
+
+  const lastEntry = sameTask.reduce(function(a, b) { return b.endTs > a.endTs ? b : a; });
+  const gap = newEntry.startTs - lastEntry.endTs;
+
+  if (gap >= 0 && gap <= 30 * 60 * 1000) {
+    lastEntry.endTs = newEntry.endTs;
+    saveEntries(selectedDate, entries);
+    renderTimeline();
+    PluginAPI.showSnack({ msg: 'Auto-merged with previous entry for "' + newEntry.title + '"', type: 'INFO' });
+    return;
+  }
+
+  const totalMs  = sameTask.reduce(function(s, e) { return s + (e.endTs - e.startTs); }, 0) + (newEntry.endTs - newEntry.startTs);
+  const earliest = Math.min.apply(null, sameTask.map(function(e) { return e.startTs; }).concat([newEntry.startTs]));
+  const latest   = Math.max.apply(null, sameTask.map(function(e) { return e.endTs; }).concat([newEntry.endTs]));
+
+  var answer = await PluginAPI.openDialog({
+    title: '"' + newEntry.title + '" — multiple entries today',
+    htmlContent: '<p style="margin-bottom:10px">Task <strong>' + esc(newEntry.title) + '</strong> already has <strong>' + sameTask.length + '</strong> entr' + (sameTask.length === 1 ? 'y' : 'ies') + ' today.</p><p style="font-size:13px;color:#757575">Total: <strong>' + msToDur(totalMs) + '</strong> &nbsp;|&nbsp; Range: <strong>' + tsToHHMM(earliest) + ' – ' + tsToHHMM(latest) + '</strong></p>',
+    buttons: [
+      { label: 'Merge into one entry', color: 'primary', raised: true },
+      { label: 'Keep separate' },
+    ],
+  });
+
+  if (answer === 'Merge into one entry') {
+    var other  = entries.filter(function(e) { return e.taskId !== newEntry.taskId; });
+    var merged = Object.assign({}, lastEntry, { startTs: earliest, endTs: latest, status: sameTask.some(function(e) { return e.status === 'synced'; }) ? 'synced' : 'pending', errorMsg: null });
+    other.push(merged);
+    other.sort(function(a, b) { return b.startTs - a.startTs; });
+    saveEntries(selectedDate, other);
+  } else {
+    addSorted(entries, newEntry);
+  }
+  renderTimeline();
+}
+
+function addSorted(entries, entry) {
+  entries.push(entry);
+  entries.sort(function(a, b) { return b.startTs - a.startTs; });
+  saveEntries(selectedDate, entries);
+}
+
+// ─────────────────────────────────────────
+// TOTAL TIME
+// ─────────────────────────────────────────
+
+function calcTotal(d) {
+  var ms = getEntries(d).reduce(function(s, e) { return s + Math.max(0, e.endTs - e.startTs); }, 0);
+  if (timer.running && d === selectedDate) ms += Date.now() - timer.startTs;
+  return ms;
+}
+
+function updateTotal() {
+  document.getElementById('total-display').textContent = 'Total: ' + msToDur(calcTotal(selectedDate));
+}
+
+// ─────────────────────────────────────────
+// TIMELINE (entry list)
+// ─────────────────────────────────────────
+
+function renderTimeline() {
+  var el = document.getElementById('timeline');
+  var entries = getEntries(selectedDate);
+  if (entries.length === 0) {
+    el.innerHTML = '<div class="timeline-empty">No entries for this day</div>';
+  } else {
+    el.innerHTML = '';
+    entries.forEach(function(entry) { el.appendChild(buildEntryCard(entry)); });
+  }
+  safeRenderSchedule();
+}
+
+function buildEntryCard(entry) {
+  var dur = Math.max(0, entry.endTs - entry.startTs);
+  var stClass = entry.status === 'synced' ? 'st-synced' : entry.status === 'error' ? 'st-error' : 'st-pending';
+  var stLabel = entry.status === 'synced' ? '✓ synced' : entry.status === 'error' ? '✗ error' : '● pending';
+
+  var div = document.createElement('div');
+  div.className = 'entry-card';
+  div.dataset.id = entry.id;
+  div.innerHTML =
+    '<div class="entry-name">' +
+      (entry.jiraId ? '<span class="entry-jira">' + esc(entry.jiraId) + '</span>' : '') +
+      '<span class="entry-title" title="' + esc(entry.title) + '">' + esc(entry.title) + '</span>' +
+    '</div>' +
+    '<div class="time-range">' +
+      '<input class="ie time-ie" data-f="start" data-id="' + entry.id + '" value="' + tsToHHMM(entry.startTs) + '" title="Start time">' +
+      '<span class="sep">–</span>' +
+      '<input class="ie time-ie" data-f="end" data-id="' + entry.id + '" value="' + tsToHHMM(entry.endTs) + '" title="End time">' +
+    '</div>' +
+    '<input class="ie dur-ie" data-f="dur" data-id="' + entry.id + '" value="' + msToDur(dur) + '" title="Duration (e.g. 1h 30m)">' +
+    '<span class="status-badge ' + stClass + '" title="' + esc(entry.errorMsg || '') + '">' + stLabel + '</span>' +
+    '<div class="entry-actions">' +
+      '<button class="icon-btn" data-a="restart" data-id="' + entry.id + '" title="Restart timer">▶</button>' +
+      '<button class="icon-btn del" data-a="delete" data-id="' + entry.id + '" title="Delete">🗑</button>' +
+    '</div>' +
+    (entry.errorMsg ? '<div class="entry-err-row">⚠ ' + esc(entry.errorMsg) + '</div>' : '');
+
+  div.querySelectorAll('.ie').forEach(function(inp) {
+    inp.addEventListener('focus', function() { inp.select(); });
+    inp.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { inp.blur(); }
+      if (e.key === 'Escape') {
+        var fresh = getEntries(selectedDate).find(function(x) { return x.id === inp.dataset.id; });
+        if (!fresh) return;
+        if (inp.dataset.f === 'start') inp.value = tsToHHMM(fresh.startTs);
+        else if (inp.dataset.f === 'end') inp.value = tsToHHMM(fresh.endTs);
+        else inp.value = msToDur(fresh.endTs - fresh.startTs);
+        inp.blur();
+      }
+    });
+    inp.addEventListener('blur', handleInlineEdit);
+  });
+  div.querySelectorAll('[data-a]').forEach(function(btn) { btn.addEventListener('click', handleEntryAction); });
+  return div;
+}
+
+// ─────────────────────────────────────────
+// INLINE EDIT
+// ─────────────────────────────────────────
+
+function handleInlineEdit(e) {
+  var inp = e.target, field = inp.dataset.f, id = inp.dataset.id;
+  var entries = getEntries(selectedDate);
+  var idx = entries.findIndex(function(x) { return x.id === id; });
+  if (idx < 0) return;
+  var entry = entries[idx];
+
+  if (field === 'start') {
+    var ts = hhmmToTs(inp.value, selectedDate);
+    if (!ts || ts >= entry.endTs) { inlineErr(inp, entry.startTs, 'start'); return; }
+    if (hasOverlap(entries, id, ts, entry.endTs)) { inlineErr(inp, entry.startTs, 'start', 'Overlaps with another entry'); return; }
+    entry.startTs = ts;
+    syncDurInput(inp, entry);
+  } else if (field === 'end') {
+    var ts2 = hhmmToTs(inp.value, selectedDate);
+    if (!ts2 || ts2 <= entry.startTs) { inlineErr(inp, entry.endTs, 'end'); return; }
+    if (hasOverlap(entries, id, entry.startTs, ts2)) { inlineErr(inp, entry.endTs, 'end', 'Overlaps with another entry'); return; }
+    entry.endTs = ts2;
+    syncDurInput(inp, entry);
+  } else if (field === 'dur') {
+    var ms = parseDur(inp.value);
+    if (!ms) { inp.value = msToDur(entry.endTs - entry.startTs); return; }
+    var newEnd = entry.startTs + ms;
+    if (hasOverlap(entries, id, entry.startTs, newEnd)) {
+      inlineErr(inp, entry.endTs, 'end', 'Overlaps with another entry');
+      inp.value = msToDur(entry.endTs - entry.startTs); return;
+    }
+    entry.endTs = newEnd;
+    var card = inp.closest('.entry-card');
+    var endInp = card.querySelector('[data-f="end"]');
+    if (endInp) endInp.value = tsToHHMM(entry.endTs);
+  }
+
+  if (entry.status === 'error') { entry.status = 'pending'; entry.errorMsg = null; }
+  saveEntries(selectedDate, entries);
+  safeRenderSchedule();
+  updateTotal();
+}
+
+function syncDurInput(inp, entry) {
+  var card = inp.closest('.entry-card');
+  var di = card.querySelector('[data-f="dur"]');
+  if (di) di.value = msToDur(entry.endTs - entry.startTs);
+}
+
+function inlineErr(inp, resetTs, field, msg) {
+  inp.classList.add('error');
+  inp.value = field === 'dur' ? msToDur(0) : tsToHHMM(resetTs);
+  setTimeout(function() { inp.classList.remove('error'); }, 1800);
+  if (msg) PluginAPI.showSnack({ msg: msg, type: 'ERROR' });
+}
+
+function hasOverlap(entries, excludeId, start, end) {
+  return entries.some(function(e) { return e.id !== excludeId && start < e.endTs && end > e.startTs; });
+}
+
+// ─────────────────────────────────────────
+// ENTRY ACTIONS
+// ─────────────────────────────────────────
+
+function handleEntryAction(e) {
+  var btn = e.currentTarget, action = btn.dataset.a, id = btn.dataset.id;
+  var entries = getEntries(selectedDate);
+  var entry = entries.find(function(x) { return x.id === id; });
+  if (!entry) return;
+
+  if (action === 'delete') {
+    if (timer.running && timer.entryId === id) stopTimer(false);
+    saveEntries(selectedDate, entries.filter(function(x) { return x.id !== id; }));
+    renderTimeline(); updateTotal();
+  } else if (action === 'restart') {
+    if (selectedDate !== todayStr()) { PluginAPI.showSnack({ msg: 'Timer only available for today', type: 'WARNING' }); return; }
+    startTimer(entry.taskId, entry.title, entry.jiraId);
+  }
+}
+
+// ─────────────────────────────────────────
+// DAY PICKER
+// ─────────────────────────────────────────
+
+function selectDate(dateStr) {
+  selectedDate = dateStr;
+  var today   = todayStr();
+  var isToday = dateStr === today;
+
+  var label = formatDateLabel(dateStr);
+  document.getElementById('current-date-label').textContent = label;
+  var schedLbl = document.getElementById('sched-date-label');
+  if (schedLbl) schedLbl.textContent = label;
+
+  document.getElementById('next-day').disabled = (dateStr >= today);
+
+  var finBtn = document.getElementById('finish-day-btn');
+  finBtn.textContent = isToday ? 'Finish Day' : 'Re-sync Day';
+
+  document.getElementById('task-input').disabled  = !isToday;
+  document.getElementById('start-time-input').disabled = !isToday;
+  document.getElementById('start-stop-btn').disabled   = !isToday;
+
+  renderTimeline();
+  updateTotal();
+}
+
+// ─────────────────────────────────────────
+// TASK SEARCH / TASK HELPERS
+// ─────────────────────────────────────────
+
+function taskJiraId(task) {
+  return (task.issueData && task.issueData.key) || task.issueKey || task.externalId || null;
+}
+
+function searchTasks(q) {
+  if (!q || !q.trim()) return allTasks.slice(0, 15);
+  var lq = q.toLowerCase();
+  return allTasks.filter(function(t) {
+    return t.title.toLowerCase().indexOf(lq) >= 0 || (taskJiraId(t) || '').toLowerCase().indexOf(lq) >= 0;
+  }).slice(0, 15);
+}
+
+var selectedTask = null;
+
+function showDropdown(items) {
+  var dd = document.getElementById('task-dropdown');
+  if (!items || items.length === 0) { dd.classList.add('hidden'); return; }
+  dd.innerHTML = '';
+  items.forEach(function(task) {
+    var jira = taskJiraId(task);
+    var div  = document.createElement('div');
+    div.className = 'task-dd-item';
+    div.innerHTML = (jira ? '<span class="jira-chip">' + esc(jira) + '</span>' : '') +
+                    '<span class="task-dd-title">' + esc(task.title) + '</span>';
+    div.addEventListener('click', function() { pickTask(task); });
+    dd.appendChild(div);
+  });
+  dd.classList.remove('hidden');
+}
+
+function pickTask(task) {
+  selectedTask = task;
+  var jira = taskJiraId(task);
+  document.getElementById('task-input').value = task.title + (jira ? ' (' + jira + ')' : '');
+  document.getElementById('task-dropdown').classList.add('hidden');
+}
+
+// ─────────────────────────────────────────
+// TODAY & INBOX TASK LIST
+// ─────────────────────────────────────────
+
+function getTodayAndInboxTasks() {
+  var today    = todayStr();
+  var todayTs  = new Date(today + 'T00:00:00').getTime();
+  var nextTs   = todayTs + 86400000;
+
+  var todayList = [];
+  var inboxList = [];
+  var seen = {};
+
+  allTasks.forEach(function(t) {
+    // NOTE: SP's TODAY tag is VIRTUAL — it never appears in task.tagIds.
+    // Today membership comes from dueDay or dueWithTime only.
+    var isToday = t.dueDay === today ||
+                  (t.dueWithTime && t.dueWithTime >= todayTs && t.dueWithTime < nextTs);
+    // "Inbox" = everything not due on a FUTURE day (includes project tasks with no dueDay,
+    // overdue tasks, and classic no-project inbox tasks). Previously filtered by !projectId
+    // which hid all Jira/project tasks as soon as any Today task existed.
+    var isInbox = !t.dueDay || t.dueDay <= today;
+
+    if (isToday) {
+      todayList.push(t);
+      seen[t.id] = true;
+    } else if (isInbox && !seen[t.id]) {
+      inboxList.push(t);
+      seen[t.id] = true;
+    }
+  });
+
+  return { todayList: todayList, inboxList: inboxList };
+}
+
+function renderTodayTasks() {
+  var list  = document.getElementById('today-task-list');
+  var count = document.getElementById('today-tasks-count');
+  var groups = getTodayAndInboxTasks();
+  var seen   = {};
+  groups.todayList.forEach(function(t) { seen[t.id] = true; });
+
+  // "Assigned to me" — Jira issues assigned to current user, not in Today, not done
+  var assignedList = allTasks.filter(function(t) {
+    var jiraKey = taskJiraId(t) || t.issueId;
+    return jiraKey && _myJiraKeys.has(jiraKey) && !seen[t.id] && !t.isDone;
+  });
+  assignedList.forEach(function(t) { seen[t.id] = true; });
+
+  // Exclude assigned tasks from Other so there's no duplication
+  var inboxList = groups.inboxList.filter(function(t) { return !seen[t.id]; });
+
+  var total = groups.todayList.length + assignedList.length + inboxList.length;
+  var showAll = (total === 0 && allTasks.length > 0);
+  count.textContent = showAll ? allTasks.length : total;
+  list.innerHTML = '';
+
+  function makeItem(task) {
+    var jira     = taskJiraId(task);
+    var isActive = timer.running && timer.taskId === task.id;
+    var item     = document.createElement('div');
+    item.className = 'today-task-item' + (isActive ? ' is-active' : '');
+    item.title     = task.title;
+    item.innerHTML = '<span class="tt-play">▶</span>' +
+                     (jira ? '<span class="jira-chip">' + esc(jira) + '</span>' : '') +
+                     '<span class="task-dd-title">' + esc(task.title) + '</span>';
+    item.addEventListener('click', function() {
+      if (selectedDate !== todayStr()) {
+        PluginAPI.showSnack({ msg: 'Timer only available for today', type: 'WARNING' }); return;
+      }
+      pickTask(task);
+      startTimer(task.id, task.title, jira);
+    });
+    return item;
+  }
+
+  function makeSection(title, items, key) {
+    var collapsed = _sectionCollapsed[key];
+    var hdr = document.createElement('div');
+    hdr.className = 'tt-section tt-section-toggle';
+    hdr.innerHTML = '<span class="tt-chevron">' + (collapsed ? '&#9654;' : '&#9660;') + '</span>' +
+                    esc(title) + '<span class="tt-section-count">' + items.length + '</span>';
+    hdr.addEventListener('click', function() {
+      _sectionCollapsed[key] = !_sectionCollapsed[key];
+      renderTodayTasks();
+    });
+    list.appendChild(hdr);
+    if (!collapsed) {
+      items.forEach(function(t) { list.appendChild(makeItem(t)); });
+    }
+  }
+
+  if (showAll) {
+    makeSection('All Tasks', allTasks, 'other');
+    return;
+  }
+
+  if (total === 0 && _myJiraKeys.size === 0) {
+    list.innerHTML = '<div style="padding:12px;text-align:center;font-size:13px;color:#9e9e9e">No tasks in Today or Inbox</div>';
+    return;
+  }
+
+  if (groups.todayList.length > 0) makeSection('Today', groups.todayList, 'today');
+
+  // "Assigned to me" section — always shown when Jira configured, even if empty
+  var cfg = getJiraCfg();
+  if (cfg && cfg.baseUrl) {
+    if (assignedList.length > 0) {
+      makeSection('Assigned to me', assignedList, 'assigned');
+    } else {
+      var hdrA = document.createElement('div');
+      hdrA.className = 'tt-section tt-section-toggle';
+      hdrA.innerHTML = '<span class="tt-chevron">&#9660;</span>Assigned to me<span class="tt-section-count">0</span>';
+      list.appendChild(hdrA);
+    }
+  } else {
+    var hdrJ = document.createElement('div');
+    hdrJ.className = 'tt-section';
+    hdrJ.innerHTML = '<span class="tt-chevron">&#9654;</span>Assigned to me' +
+      '<span class="tt-section-count" style="float:none;margin-left:4px;font-style:italic">— configure Jira</span>';
+    list.appendChild(hdrJ);
+  }
+
+  if (inboxList.length > 0) makeSection('Other Tasks', inboxList.slice(0, 30), 'other');
+}
+
+// ─────────────────────────────────────────
+// PINNED TASKS
+// ─────────────────────────────────────────
+
+function renderPins() {
+  var container = document.getElementById('pin-chips');
+  var ps = getPinSettings();
+  container.innerHTML = '';
+
+  // Apply layout class to parent bar
+  var bar = container.closest('.pins-bar');
+  if (bar) bar.classList.toggle('stacked', ps.layout === 'stacked');
+
+  getPinned().forEach(function(id) {
+    var task = allTasks.find(function(t) { return t.id === id; });
+    if (!task) return;
+    var jira     = taskJiraId(task);
+    var isActive = timer.running && timer.taskId === id;
+
+    // Build label based on setting
+    var shortTag = jira || task.title.slice(0, 5).toUpperCase();
+    var labelText = ps.label === 'name'    ? task.title
+                  : ps.label === 'tagname' ? (jira ? jira + ' ' : '') + task.title
+                  : shortTag;
+
+    function handleClick(e) {
+      if (e.target.classList.contains('pin-remove') || e.target.dataset.id) {
+        savePinned(getPinned().filter(function(x) { return x !== id; }));
+        renderPins(); return;
+      }
+      if (selectedDate !== todayStr()) {
+        try { PluginAPI.showSnack({ msg: 'Timer only available for today', type: 'WARNING' }); } catch(_) {}
+        return;
+      }
+      startTimer(task.id, task.title, jira); renderPins();
+    }
+
+    if (ps.layout === 'stacked') {
+      var row = document.createElement('div');
+      row.className = 'pin-row' + (isActive ? ' active' : '');
+      row.title = task.title;
+      if (jira && ps.label !== 'name') {
+        row.innerHTML = '<span class="pin-row-jira">' + esc(jira) + '</span>' +
+                        (ps.label === 'tagname' ? '<span class="pin-row-label">' + esc(task.title) + '</span>' : '') +
+                        '<button class="pin-remove" data-id="' + id + '">×</button>';
+      } else {
+        row.innerHTML = '<span class="pin-row-label">' + esc(labelText) + '</span>' +
+                        '<button class="pin-remove" data-id="' + id + '">×</button>';
+      }
+      row.addEventListener('click', handleClick);
+      container.appendChild(row);
+    } else {
+      var chip = document.createElement('div');
+      chip.className = 'pin-chip' + (isActive ? ' active' : '');
+      chip.title     = task.title;
+      chip.innerHTML = '<span>' + esc(labelText) + '</span><button class="pin-remove" data-id="' + id + '">×</button>';
+      chip.addEventListener('click', handleClick);
+      container.appendChild(chip);
+    }
+  });
+}
+
+function renderPinSearch(q) {
+  var container = document.getElementById('pin-results');
+  var results   = searchTasks(q);
+  var pinned    = getPinned();
+  container.innerHTML = '';
+
+  if (results.length === 0) {
+    container.innerHTML = '<div style="padding:12px;text-align:center;font-size:13px;color:#9e9e9e">No results</div>';
+    return;
+  }
+  results.forEach(function(task) {
+    var jira     = taskJiraId(task);
+    var isPinned = pinned.indexOf(task.id) >= 0;
+    var div      = document.createElement('div');
+    div.className = 'task-dd-item';
+    div.style.justifyContent = 'space-between';
+    div.innerHTML =
+      '<div style="display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden">' +
+        (jira ? '<span class="jira-chip">' + esc(jira) + '</span>' : '') +
+        '<span class="task-dd-title">' + esc(task.title) + '</span>' +
+      '</div>' +
+      (isPinned
+        ? '<span style="font-size:11px;color:#9e9e9e;flex-shrink:0">pinned</span>'
+        : '<button class="btn-outline" style="font-size:11px;padding:2px 8px;flex-shrink:0" data-pid="' + task.id + '">Pin</button>');
+
+    if (!isPinned) {
+      div.querySelector('[data-pid]').addEventListener('click', function(e) {
+        e.stopPropagation();
+        var ids = getPinned();
+        if (ids.length >= 6) { PluginAPI.showSnack({ msg: 'Maximum 6 pinned tasks', type: 'WARNING' }); return; }
+        ids.push(task.id);
+        savePinned(ids); renderPins();
+        document.getElementById('pin-overlay').classList.add('hidden');
+      });
+    }
+    container.appendChild(div);
+  });
+}
+
+// ─────────────────────────────────────────
+// SCHEDULE VIEW (right panel)
+// ─────────────────────────────────────────
+
+function safeRenderSchedule() {
+  try { renderScheduleView(); } catch (err) {
+    dbg('renderScheduleView ERROR: ' + err.message, 'error');
+    console.error('Schedule render error:', err);
+  }
+}
+
+function computeColumns(entries) {
+  var sorted = entries.slice().sort(function(a,b){ return a.startTs - b.startTs; });
+  var colAssign = {}; // id -> col number
+  var active = []; // {endTs, col}
+
+  sorted.forEach(function(e) {
+    active = active.filter(function(a){ return a.endTs > e.startTs; });
+    var used = active.map(function(a){ return a.col; });
+    var col = 0; while (used.indexOf(col) >= 0) col++;
+    colAssign[e.id] = col;
+    active.push({ endTs: e.endTs, col: col });
+  });
+
+  var result = {};
+  entries.forEach(function(e) {
+    var overlapping = entries.filter(function(o){
+      return o.id !== e.id && o.startTs < e.endTs && o.endTs > e.startTs;
+    });
+    var maxCol = colAssign[e.id] || 0;
+    overlapping.forEach(function(o){ if ((colAssign[o.id]||0) > maxCol) maxCol = colAssign[o.id]||0; });
+    result[e.id] = { col: colAssign[e.id] || 0, totalCols: maxCol + 1 };
+  });
+  return result;
+}
+
+function renderScheduleView() {
+  var grid     = document.getElementById('schedule-grid');
+  var entries  = getEntries(selectedDate);
+  var dayStart = new Date(selectedDate + 'T00:00:00').getTime();
+
+  // Visible hour range: minimum full work day 7–20, always include current time
+  var rangeStartHour = 7, rangeEndHour = 20;
+
+  if (selectedDate === todayStr()) {
+    var nowHour = new Date().getHours();
+    rangeEndHour   = Math.max(rangeEndHour, Math.min(24, nowHour + 2));
+    rangeStartHour = Math.min(rangeStartHour, Math.max(0, nowHour - 1));
+  }
+
+  if (entries.length > 0 || timer.running) {
+    var allTs = [];
+    entries.forEach(function(e) { allTs.push(e.startTs, e.endTs); });
+    if (timer.running && selectedDate === todayStr()) {
+      allTs.push(timer.startTs, Date.now());
+    }
+    if (allTs.length > 0) {
+      var earliest = Math.min.apply(null, allTs);
+      var latest   = Math.max.apply(null, allTs);
+      rangeStartHour = Math.min(rangeStartHour, Math.max(0,  Math.floor((earliest - dayStart) / 3600000) - 1));
+      rangeEndHour   = Math.max(rangeEndHour,   Math.min(24, Math.ceil((latest   - dayStart) / 3600000) + 1));
+    }
+  }
+
+  var rangeStartMs = dayStart + rangeStartHour * 3600000;
+  var totalMinutes = (rangeEndHour - rangeStartHour) * 60;
+  var pxpm         = currentPxPerMin();
+  var totalHeight  = totalMinutes * pxpm;
+
+  schedState.rangeStartMs = rangeStartMs;
+  schedState.pxPerMin     = pxpm;
+
+  grid.innerHTML = '';
+  grid.style.height = totalHeight + 'px';
+
+  // Hour and half-hour grid lines
+  for (var h = rangeStartHour; h <= rangeEndHour; h++) {
+    var y = (h - rangeStartHour) * 60 * pxpm;
+
+    var line = document.createElement('div');
+    line.className = 'sched-hour';
+    line.style.top = y + 'px';
+
+    var lbl = document.createElement('span');
+    lbl.className   = 'sched-hour-label';
+    lbl.textContent = pad(h % 24) + ':00';
+    line.appendChild(lbl);
+    grid.appendChild(line);
+
+    if (h < rangeEndHour) {
+      var half = document.createElement('div');
+      half.className = 'sched-half';
+      half.style.top = (y + 30 * pxpm) + 'px';
+      grid.appendChild(half);
+    }
+  }
+
+  // Include the live timer as a synthetic entry so computeColumns can detect overlaps with it
+  var liveEntry = null;
+  if (timer.running && selectedDate === todayStr()) {
+    liveEntry = { id: '__live__', startTs: timer.startTs, endTs: Date.now() };
+  }
+  var colEntries = liveEntry ? entries.concat([liveEntry]) : entries;
+  var cols = computeColumns(colEntries);
+
+  entries.forEach(function(entry) {
+    var ci = cols[entry.id] || { col: 0, totalCols: 1 };
+    var block = buildScheduleBlock(entry, rangeStartMs, pxpm, ci.col, ci.totalCols);
+    if (block) grid.appendChild(block);
+  });
+
+  // Live "in-progress" block — positioned using its column slot
+  if (liveEntry) {
+    var ci      = cols['__live__'] || { col: 0, totalCols: 1 };
+    var startMin = (liveEntry.startTs - rangeStartMs) / 60000;
+    var durMin   = Math.max(1, (Date.now() - liveEntry.startTs) / 60000);
+    var live     = document.createElement('div');
+    live.className = 'sched-entry-block live';
+    live.style.top       = (startMin * pxpm) + 'px';
+    live.style.minHeight = Math.max(20, durMin * pxpm) + 'px';
+    if (ci.totalCols === 1) {
+      live.style.left  = '40px';
+      live.style.right = '4px';
+    } else {
+      live.style.left  = 'calc(40px + ' + (ci.col / ci.totalCols) + ' * (100% - 44px))';
+      live.style.width = 'calc(' + (1 / ci.totalCols) + ' * (100% - 44px) - 1px)';
+      live.style.right = 'auto';
+    }
+    var ll = document.createElement('div');
+    ll.className   = 'sched-entry-label';
+    ll.textContent = (timer.jiraId ? timer.jiraId + ' ' : '') + timer.taskTitle;
+    live.appendChild(ll);
+    grid.appendChild(live);
+  }
+
+  // Current-time "now" line
+  if (selectedDate === todayStr()) {
+    var nowMin   = (Date.now() - rangeStartMs) / 60000;
+    if (nowMin >= 0 && nowMin <= totalMinutes) {
+      var nowLine = document.createElement('div');
+      nowLine.className = 'sched-now-line';
+      nowLine.style.top = (nowMin * pxpm) + 'px';
+      var nowDot = document.createElement('div');
+      nowDot.className = 'sched-now-dot';
+      nowLine.appendChild(nowDot);
+      grid.appendChild(nowLine);
+    }
+  }
+}
+
+function buildScheduleBlock(entry, rangeStartMs, pxpm, col, totalCols) {
+  col = col || 0; totalCols = totalCols || 1;
+  var offsetMin = (entry.startTs - rangeStartMs) / 60000;
+  var durMin    = Math.max(1, (entry.endTs - entry.startTs) / 60000);
+  var top       = offsetMin * pxpm;
+  var height    = Math.max(6, durMin * pxpm);
+
+  var stClass = entry.status === 'synced' ? 'st-synced' : entry.status === 'error' ? 'st-error' : '';
+
+  var block = document.createElement('div');
+  block.className = 'sched-entry-block' + (stClass ? ' ' + stClass : '');
+  block.dataset.id = entry.id;
+  block.style.top       = top + 'px';
+  block.style.minHeight = height + 'px';
+  // Column layout: split horizontally when entries overlap
+  if (totalCols === 1) {
+    block.style.left  = '40px';
+    block.style.right = '4px';
+  } else {
+    var gap = 1;
+    block.style.left  = 'calc(40px + ' + (col / totalCols) + ' * (100% - 44px))';
+    block.style.width = 'calc(' + (1 / totalCols) + ' * (100% - 44px) - ' + gap + 'px)';
+    block.style.right = 'auto';
+  }
+
+  var lbl = document.createElement('div');
+  lbl.className   = 'sched-entry-label';
+  lbl.textContent = (entry.jiraId ? entry.jiraId + ' ' : '') + entry.title;
+  block.appendChild(lbl);
+
+  var topH = document.createElement('div');
+  topH.className = 'sched-handle sched-handle-top';
+  topH.addEventListener('mousedown', function(e) { onHandleMousedown(e, entry, 'top'); });
+  block.appendChild(topH);
+
+  var botH = document.createElement('div');
+  botH.className = 'sched-handle sched-handle-bot';
+  botH.addEventListener('mousedown', function(e) { onHandleMousedown(e, entry, 'bot'); });
+  block.appendChild(botH);
+
+  // Block body drag = move the entire entry
+  block.addEventListener('mousedown', function(e) {
+    if (e.target.classList.contains('sched-handle') || e.target.closest('.sched-handle')) return;
+    onBlockMove(e, entry);
+  });
+
+  // Right-click context menu
+  block.addEventListener('contextmenu', function(e) {
+    e.preventDefault(); e.stopPropagation();
+    showCtxMenu(e, entry);
+  });
+
+  return block;
+}
+
+function onHandleMousedown(e, entry, handle) {
+  e.preventDefault(); e.stopPropagation();
+
+  var origStart = entry.startTs;
+  var origEnd   = entry.endTs;
+  var startY    = e.clientY;
+  var SNAP_MS   = 15 * 60 * 1000;
+
+  var block = document.querySelector('.sched-entry-block[data-id="' + entry.id + '"]');
+  if (block) block.classList.add('dragging');
+
+  function onMove(me) {
+    var deltaMin = Math.round((me.clientY - startY) / PX_PER_MIN / 15) * 15;
+    var deltaMs  = deltaMin * 60000;
+
+    if (handle === 'top') {
+      var ns = origStart + deltaMs;
+      // Snap start edge to the end of a nearby entry
+      var SNAP_THRESH = 8 * 60000;
+      getEntries(selectedDate).forEach(function(o) {
+        if (o.id !== entry.id && Math.abs(o.endTs - ns) < SNAP_THRESH) ns = o.endTs;
+      });
+      if (ns < origEnd - SNAP_MS) entry.startTs = ns;
+    } else {
+      var ne = origEnd + deltaMs;
+      // Snap end edge to the start of a nearby entry
+      var SNAP_THRESH = 8 * 60000;
+      getEntries(selectedDate).forEach(function(o) {
+        if (o.id !== entry.id && Math.abs(o.startTs - ne) < SNAP_THRESH) ne = o.startTs;
+      });
+      if (ne > origStart + SNAP_MS) entry.endTs = ne;
+    }
+
+    // Live-update block position
+    if (block) {
+      var om = (entry.startTs - schedState.rangeStartMs) / 60000;
+      var dm = Math.max(1, (entry.endTs - entry.startTs) / 60000);
+      block.style.top    = (om * schedState.pxPerMin) + 'px';
+      block.style.height = Math.max(6, dm * schedState.pxPerMin) + 'px';
+    }
+
+    // Mirror into list card fields
+    var card = document.querySelector('.entry-card[data-id="' + entry.id + '"]');
+    if (card) {
+      var si = card.querySelector('[data-f="start"]');
+      var ei = card.querySelector('[data-f="end"]');
+      var di = card.querySelector('[data-f="dur"]');
+      if (si) si.value = tsToHHMM(entry.startTs);
+      if (ei) ei.value = tsToHHMM(entry.endTs);
+      if (di) di.value = msToDur(entry.endTs - entry.startTs);
+    }
+    updateTotal();
+  }
+
+  function onUp() {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    if (block) block.classList.remove('dragging');
+
+    var liveEntries = getEntries(selectedDate);
+    if (entry.status === 'error') { entry.status = 'pending'; entry.errorMsg = null; }
+    saveEntries(selectedDate, liveEntries);
+    safeRenderSchedule(); renderTimeline(); updateTotal();
+  }
+
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+var _ctxEntry = null;
+function hideCtxMenu() {
+  var m = document.getElementById('ctx-menu');
+  if (m) { m.classList.add('hidden'); m.innerHTML = ''; }
+  _ctxEntry = null;
+}
+function showCtxMenu(e, entry) {
+  hideCtxMenu();
+  _ctxEntry = entry;
+  var m = document.getElementById('ctx-menu');
+  if (!m) return;
+
+  var items = [
+    { icon: '▶', label: 'Restart timer',    action: 'restart' },
+    { icon: '✂', label: 'Split at midpoint', action: 'split'   },
+    { icon: '🗑', label: 'Delete',            action: 'delete', danger: true },
+  ];
+
+  items.forEach(function(it) {
+    var div = document.createElement('div');
+    div.className = 'ctx-item' + (it.danger ? ' danger' : '');
+    div.innerHTML = '<span style="font-size:12px;width:16px;text-align:center">' + it.icon + '</span>' + esc(it.label);
+    div.addEventListener('click', function() {
+      hideCtxMenu();
+      handleCtxAction(it.action, entry);
+    });
+    m.appendChild(div);
+  });
+
+  // Position at cursor, keep inside viewport
+  var x = e.clientX, y = e.clientY;
+  m.classList.remove('hidden');
+  var rect = m.getBoundingClientRect();
+  if (x + rect.width  > window.innerWidth)  x = window.innerWidth  - rect.width  - 4;
+  if (y + rect.height > window.innerHeight) y = window.innerHeight - rect.height - 4;
+  m.style.left = x + 'px'; m.style.top = y + 'px';
+}
+function handleCtxAction(action, entry) {
+  if (action === 'delete') {
+    var entries = getEntries(selectedDate).filter(function(e){ return e.id !== entry.id; });
+    saveEntries(selectedDate, entries);
+    renderTimeline(); safeRenderSchedule(); updateTotal();
+
+  } else if (action === 'restart') {
+    if (selectedDate !== todayStr()) {
+      try { PluginAPI.showSnack({ msg: 'Timer only available for today', type: 'WARNING' }); } catch(_) {}
+      return;
+    }
+    startTimer(entry.taskId || ('custom-' + Date.now()), entry.title, entry.jiraId || null);
+
+  } else if (action === 'split') {
+    var mid = Math.round((entry.startTs + entry.endTs) / 2 / (15*60000)) * (15*60000);
+    if (mid <= entry.startTs || mid >= entry.endTs) return;
+    var second = Object.assign({}, entry, { id: uuid(), startTs: mid });
+    entry.endTs = mid;
+    var all = getEntries(selectedDate);
+    var idx = all.findIndex(function(x){ return x.id === entry.id; });
+    if (idx >= 0) all.splice(idx + 1, 0, second);
+    saveEntries(selectedDate, all);
+    renderTimeline(); safeRenderSchedule(); updateTotal();
+  }
+}
+
+function onBlockMove(e, entry) {
+  e.preventDefault(); e.stopPropagation();
+
+  var origStart = entry.startTs;
+  var origEnd   = entry.endTs;
+  var startY    = e.clientY;
+  var dur       = origEnd - origStart;
+  var SNAP_MIN  = 15;
+  var dayStart  = new Date(selectedDate + 'T00:00:00').getTime();
+
+  var block = document.querySelector('.sched-entry-block[data-id="' + entry.id + '"]');
+  if (block) block.classList.add('dragging', 'moving');
+
+  function onMove(me) {
+    var deltaMin = Math.round((me.clientY - startY) / schedState.pxPerMin / SNAP_MIN) * SNAP_MIN;
+    var deltaMs  = deltaMin * 60000;
+    var newStart = origStart + deltaMs;
+    var newEnd   = newStart + dur;
+
+    // Clamp to day
+    if (newStart < dayStart) { newStart = dayStart; newEnd = newStart + dur; }
+    if (newEnd > dayStart + 86400000) { newEnd = dayStart + 86400000; newStart = newEnd - dur; }
+
+    entry.startTs = newStart;
+    entry.endTs   = newEnd;
+
+    if (block) {
+      var om = (entry.startTs - schedState.rangeStartMs) / 60000;
+      var dm = Math.max(1, dur / 60000);
+      block.style.top       = (om * schedState.pxPerMin) + 'px';
+      block.style.minHeight = Math.max(6, dm * schedState.pxPerMin) + 'px';
+    }
+
+    var card = document.querySelector('.entry-card[data-id="' + entry.id + '"]');
+    if (card) {
+      var si = card.querySelector('[data-f="start"]'), ei = card.querySelector('[data-f="end"]');
+      if (si) si.value = tsToHHMM(entry.startTs);
+      if (ei) ei.value = tsToHHMM(entry.endTs);
+    }
+    updateTotal();
+  }
+
+  function onUp() {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    if (block) block.classList.remove('dragging', 'moving');
+
+    var liveEntries = getEntries(selectedDate);
+    saveEntries(selectedDate, liveEntries);
+    safeRenderSchedule(); renderTimeline(); updateTotal();
+  }
+
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+function updateSchedNow() {
+  if (selectedDate !== todayStr()) return;
+  var grid = document.getElementById('schedule-grid');
+  if (!grid || !grid.style.height) return;
+
+  var totalMinutes = parseInt(grid.style.height) / schedState.pxPerMin;
+  var nowMin = (Date.now() - schedState.rangeStartMs) / 60000;
+
+  var line = grid.querySelector('.sched-now-line');
+  if (line && nowMin >= 0 && nowMin <= totalMinutes) {
+    line.style.top = (nowMin * schedState.pxPerMin) + 'px';
+  }
+  var live = grid.querySelector('.sched-entry-block.live');
+  if (live && timer.running) {
+    var sm = (timer.startTs - schedState.rangeStartMs) / 60000;
+    var dm = Math.max(1, (Date.now() - timer.startTs) / 60000);
+    live.style.top       = (sm * schedState.pxPerMin) + 'px';
+    live.style.minHeight = Math.max(20, dm * schedState.pxPerMin) + 'px';
+  }
+}
+
+function schedScrollToNow() {
+  if (selectedDate !== todayStr()) return;
+  var panel = document.getElementById('right-panel');
+  if (!panel) return;
+  var nowMin = (Date.now() - schedState.rangeStartMs) / 60000;
+  panel.scrollTop = Math.max(0, nowMin * schedState.pxPerMin - panel.clientHeight / 3);
+}
+
+// ─────────────────────────────────────────
+// JIRA SYNC
+// ─────────────────────────────────────────
+
+async function finishDay() {
+  var cfg     = getJiraCfg();
+  var entries = getEntries(selectedDate);
+  var pending = entries.filter(function(e) { return e.status === 'pending' && e.jiraId; });
+  var noId    = entries.filter(function(e) { return e.status === 'pending' && !e.jiraId; });
+
+  if (pending.length === 0 && noId.length === 0) {
+    PluginAPI.showSnack({ msg: 'No pending entries to sync', type: 'INFO' }); return;
+  }
+  // Mark non-Jira entries as done right away — they can't be synced but the day should still finish
+  if (noId.length > 0) {
+    noId.forEach(function(e) { e.status = 'synced'; });
+    saveEntries(selectedDate, entries);
+    renderTimeline();
+    PluginAPI.showSnack({ msg: noId.length + ' entr' + (noId.length === 1 ? 'y' : 'ies') + ' without Jira ID marked done', type: 'INFO' });
+  }
+  if (!cfg || !cfg.baseUrl || !cfg.email || !cfg.apiToken) {
+    if (pending.length > 0) PluginAPI.showSnack({ msg: 'Configure Jira integration first (⚙)', type: 'WARNING' });
+    return;
+  }
+  if (pending.length === 0) return;
+
+  var btn = document.getElementById('finish-day-btn');
+  btn.disabled = true; btn.textContent = 'Syncing…';
+
+  var authHeader = 'Basic ' + btoa(cfg.email + ':' + cfg.apiToken);
+  var errCount   = 0;
+
+  for (var i = 0; i < pending.length; i++) {
+    var entry = pending[i];
+    try {
+      var res = await fetch(cfg.baseUrl + '/rest/api/2/issue/' + entry.jiraId + '/worklog', {
+        method: 'POST',
+        headers: { 'Authorization': authHeader, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          started: jiraTs(entry.startTs),
+          timeSpentSeconds: Math.max(60, Math.floor((entry.endTs - entry.startTs) / 1000)),
+          comment: entry.title,
+        }),
+      });
+      if (res.ok) { entry.status = 'synced'; entry.errorMsg = null; }
+      else {
+        var body = await res.text().catch(function() { return res.status; });
+        entry.status = 'error'; entry.errorMsg = 'HTTP ' + res.status + ': ' + String(body).slice(0, 120); errCount++;
+      }
+    } catch (err) { entry.status = 'error'; entry.errorMsg = err.message; errCount++; }
+  }
+
+  saveEntries(selectedDate, entries);
+  renderTimeline();
+  btn.disabled = false;
+  btn.textContent = selectedDate === todayStr() ? 'Finish Day' : 'Re-sync Day';
+
+  if (errCount > 0) {
+    var failList = entries.filter(function(e) { return e.status === 'error'; })
+      .map(function(e) { return '<li style="margin-bottom:4px"><strong>' + esc(e.jiraId) + '</strong> – ' + esc(e.title) + '<br><small style="color:#f44336">' + esc(e.errorMsg) + '</small></li>'; }).join('');
+    var answer = await PluginAPI.openDialog({
+      title: errCount + ' entr' + (errCount === 1 ? 'y' : 'ies') + ' failed to sync',
+      htmlContent: '<ul style="margin:8px 0 0;padding-left:18px;font-size:13px;line-height:1.6">' + failList + '</ul>',
+      buttons: [{ label: 'Retry failed', color: 'primary', raised: true }, { label: 'Close' }],
+    });
+    if (answer === 'Retry failed') {
+      entries.filter(function(e) { return e.status === 'error'; }).forEach(function(e) { e.status = 'pending'; e.errorMsg = null; });
+      saveEntries(selectedDate, entries); renderTimeline(); await finishDay();
+    }
+  } else {
+    PluginAPI.showSnack({ msg: pending.length + ' entr' + (pending.length === 1 ? 'y' : 'ies') + ' synced!', type: 'SUCCESS' });
+  }
+}
+
+// ─────────────────────────────────────────
+// TASKS LOADER (non-blocking, with timeout)
+// ─────────────────────────────────────────
+
+function loadTasks() {
+  var resolved = false;
+  dbg('loadTasks() → calling PluginAPI.getTasks()…');
+
+  function done(tasks, src) {
+    if (resolved) return;
+    resolved = true;
+    allTasks = (Array.isArray(tasks) && tasks.length > 0) ? tasks : [];
+    dbg('getTasks ' + (src || '') + ' → ' + allTasks.length + ' tasks', allTasks.length > 0 ? 'ok' : 'warn');
+    if (allTasks.length > 0) {
+      dbg('  sample[0]: "' + allTasks[0].title + '" projectId=' + allTasks[0].projectId + ' dueDay=' + allTasks[0].dueDay + ' tagIds=' + JSON.stringify(allTasks[0].tagIds));
+    }
+    renderTodayTasks();
+    renderPins();
+    if (allTasks.length === 0) {
+      dbg('empty — retry in 3s…', 'warn');
+      setTimeout(function() {
+        dbg('retry getTasks()…');
+        try {
+          PluginAPI.getTasks().then(function(t) {
+            if (Array.isArray(t) && t.length > 0) {
+              allTasks = t;
+              dbg('retry OK → ' + allTasks.length + ' tasks', 'ok');
+              renderTodayTasks(); renderPins();
+            } else { dbg('retry still empty', 'warn'); }
+          }).catch(function(e) { dbg('retry ERROR: ' + e.message, 'error'); });
+        } catch(e) { dbg('retry THROW: ' + e.message, 'error'); }
+      }, 3000);
+    }
+  }
+
+  var timeout = setTimeout(function() {
+    dbg('getTasks() TIMED OUT after 5s — proceeding without tasks', 'error');
+    done([], 'timeout');
+  }, 5000);
+
+  try {
+    PluginAPI.getTasks()
+      .then(function(t) { clearTimeout(timeout); done(t, 'resolved'); })
+      .catch(function(e) { clearTimeout(timeout); dbg('getTasks ERROR: ' + e.message, 'error'); done([], 'error'); });
+  } catch(e) {
+    clearTimeout(timeout);
+    dbg('getTasks() THROW: ' + e.message, 'error');
+    done([], 'error');
+  }
+}
+
+// ─────────────────────────────────────────
+// HOOKS — registered inside init() after PluginAPI is available
+// ─────────────────────────────────────────
+
+// ─────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────
+
+function applySchedFontSize(size) {
+  document.querySelectorAll('.sched-entry-label').forEach(function(el) {
+    el.style.fontSize = size + 'px';
+  });
+  // Store as CSS variable so future renders also use it
+  document.documentElement.style.setProperty('--sched-font-size', size + 'px');
+}
+function updateZoomLabel() {
+  var ss = getSchedSettings();
+  var lbl = document.getElementById('zoom-lbl');
+  if (lbl) lbl.textContent = ZOOM_LEVELS[ss.zoomIdx] + '×';
+}
+
+async function init() {
+  dbg('init() start — PluginAPI type: ' + typeof PluginAPI);
+  // 1. Load persisted data (required for crash-recovery, fast)
+  await loadStore();
+
+  // Auto-detect SP's native Jira config if we don't have one yet
+  if (!(store['jira-config'] && store['jira-config'].baseUrl)) {
+    var _detected = await detectSpJiraConfig();
+    if (_detected) {
+      store['jira-config'] = _detected;
+      scheduleSave();
+      dbg('Auto-detected SP Jira config: ' + _detected.baseUrl, 'ok');
+    }
+  }
+
+  // Fetch Jira issues assigned to current user (non-blocking)
+  fetchJiraAssigned();
+
+  // 2. Detect and apply theme
+  applyTheme();
+
+  // 3. Crash-recovery: restore running timer
+  var saved = store['timer-state'];
+  if (saved && saved.running && saved.taskId) {
+    Object.assign(timer, saved);
+    applyTimerUI();
+    clearInterval(timerInterval);
+    timerInterval = setInterval(tickTimer, 1000);
+    tickTimer();
+  }
+
+  // 4. Render UI immediately — NO await before this point for tasks
+  dbg('selectDate + renderPins…');
+  selectDate(todayStr());
+  renderPins();
+  document.getElementById('today-task-list').innerHTML =
+    '<div style="padding:12px;text-align:center;font-size:13px;color:#9e9e9e">Loading tasks…</div>';
+  document.getElementById('today-tasks-count').textContent = '…';
+  dbg('UI rendered, wiring listeners…', 'ok');
+
+  // 4. Scroll schedule to now
+  setTimeout(schedScrollToNow, 200);
+
+  // 5. Load tasks non-blocking — resolves independently of UI setup
+  loadTasks();
+
+  // ── Event listeners ──
+
+  var taskInp = document.getElementById('task-input');
+  taskInp.addEventListener('input', function() {
+    selectedTask = null;
+    showDropdown(searchTasks(taskInp.value));
+  });
+  taskInp.addEventListener('focus', function() {
+    if (!timer.running) showDropdown(searchTasks(taskInp.value));
+  });
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.task-search-wrap'))
+      document.getElementById('task-dropdown').classList.add('hidden');
+    if (!e.target.closest('.ctx-menu'))
+      hideCtxMenu();
+  });
+
+  // Today & Inbox toggle
+  document.getElementById('today-tasks-toggle').addEventListener('click', function() {
+    document.getElementById('today-task-list').classList.toggle('hidden');
+  });
+
+  var startInp = document.getElementById('start-time-input');
+  startInp.addEventListener('blur', function() {
+    if (!timer.running) {
+      var ts = hhmmToTs(startInp.value, todayStr());
+      if (ts && ts <= Date.now()) { pendingStartTs = ts; }
+      else { startInp.value = ''; pendingStartTs = null; }
+    } else {
+      var ts2 = hhmmToTs(startInp.value, selectedDate);
+      if (ts2 && ts2 <= Date.now()) {
+        timer.startTs = ts2; store['timer-state'] = Object.assign({}, timer); scheduleSave();
+      } else {
+        startInp.value = tsToHHMM(timer.startTs);
+        PluginAPI.showSnack({ msg: 'Start time cannot be in the future', type: 'WARNING' });
+      }
+    }
+  });
+  startInp.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') startInp.blur();
+    if (e.key === 'Escape') { startInp.value = timer.running ? tsToHHMM(timer.startTs) : ''; startInp.blur(); }
+  });
+
+  document.getElementById('start-stop-btn').addEventListener('click', function() {
+    if (timer.running) { stopTimer(); return; }
+    if (selectedDate !== todayStr()) return;
+
+    var taskId, taskTitle, jiraId;
+    if (selectedTask) {
+      taskId = selectedTask.id; taskTitle = selectedTask.title; jiraId = taskJiraId(selectedTask);
+    } else {
+      var raw = taskInp.value.trim();
+      if (!raw) { PluginAPI.showSnack({ msg: 'Select a task before starting', type: 'WARNING' }); return; }
+      var m = raw.match(/\(([A-Z][A-Z0-9_]+-\d+)\)\s*$/);
+      jiraId = m ? m[1] : null;
+      taskTitle = m ? raw.replace(/\s*\([^)]+\)\s*$/, '').trim() : raw;
+      taskId = 'custom-' + Date.now();
+    }
+    startTimer(taskId, taskTitle, jiraId);
+  });
+
+  document.getElementById('prev-day').addEventListener('click', function() { selectDate(addDays(selectedDate, -1)); });
+  document.getElementById('next-day').addEventListener('click', function() { if (selectedDate < todayStr()) selectDate(addDays(selectedDate, 1)); });
+  document.getElementById('today-btn').addEventListener('click', function() { selectDate(todayStr()); });
+
+  document.getElementById('finish-day-btn').addEventListener('click', finishDay);
+
+  // Settings open
+  document.getElementById('settings-btn').addEventListener('click', function() {
+    var ps  = getPinSettings();
+    var ss  = getSchedSettings();
+    var cfg = getJiraCfg() || {};
+    var layoutEl = document.getElementById('pin-layout-' + ps.layout);
+    if (layoutEl) layoutEl.checked = true;
+    var labelEl  = document.getElementById('pin-label-'  + ps.label);
+    if (labelEl)  labelEl.checked = true;
+    var fsEl = document.getElementById('sched-fontsize');
+    if (fsEl) fsEl.value = String(ss.fontSize);
+    document.getElementById('cfg-url').value   = cfg.baseUrl   || '';
+    document.getElementById('cfg-email').value = cfg.email     || '';
+    document.getElementById('cfg-token').value = cfg.apiToken  || '';
+    document.getElementById('settings-overlay').classList.remove('hidden');
+  });
+  document.getElementById('save-cfg').addEventListener('click', function() {
+    var cfg = {
+      baseUrl:  document.getElementById('cfg-url').value.trim().replace(/\/$/, ''),
+      email:    document.getElementById('cfg-email').value.trim(),
+      apiToken: document.getElementById('cfg-token').value.trim(),
+    };
+    if (!cfg.baseUrl || !cfg.email || !cfg.apiToken) {
+      try { PluginAPI.showSnack({ msg: 'Fill in all Jira fields', type: 'WARNING' }); } catch(_) {}
+      return;
+    }
+    saveJiraCfg(cfg);
+    fetchJiraAssigned();
+    document.getElementById('settings-overlay').classList.add('hidden');
+    try { PluginAPI.showSnack({ msg: 'Jira config saved', type: 'SUCCESS' }); } catch(_) {}
+  });
+  document.getElementById('jira-detect-btn').addEventListener('click', async function() {
+    var detected = await detectSpJiraConfig();
+    if (detected) {
+      document.getElementById('cfg-url').value   = detected.baseUrl;
+      document.getElementById('cfg-email').value = detected.email;
+      document.getElementById('cfg-token').value = detected.apiToken;
+      dbg('Jira config detected from SP — click Save to apply', 'ok');
+    } else {
+      try { PluginAPI.showSnack({ msg: 'No enabled Jira provider found in SP', type: 'WARNING' }); } catch(_) {}
+    }
+  });
+  document.getElementById('jira-test-btn').addEventListener('click', async function() {
+    var baseUrl = document.getElementById('cfg-url').value.trim().replace(/\/$/, '');
+    var email   = document.getElementById('cfg-email').value.trim();
+    var token   = document.getElementById('cfg-token').value.trim();
+    if (!baseUrl || !email || !token) {
+      try { PluginAPI.showSnack({ msg: 'Fill in all Jira fields first', type: 'WARNING' }); } catch(_) {}
+      return;
+    }
+    var btn = document.getElementById('jira-test-btn');
+    btn.textContent = 'Testing…';
+    btn.disabled = true;
+    try {
+      var res = await fetch(baseUrl + '/rest/api/2/myself', {
+        headers: { 'Authorization': 'Basic ' + btoa(email + ':' + token), 'Content-Type': 'application/json' }
+      });
+      if (res.ok) {
+        var me = await res.json();
+        var name = me.displayName || me.emailAddress || 'OK';
+        try { PluginAPI.showSnack({ msg: 'Connected as ' + name, type: 'SUCCESS' }); } catch(_) {}
+        dbg('Jira test OK: ' + name, 'ok');
+      } else {
+        try { PluginAPI.showSnack({ msg: 'Jira error ' + res.status, type: 'ERROR' }); } catch(_) {}
+        dbg('Jira test FAIL ' + res.status, 'error');
+      }
+    } catch(e) {
+      try { PluginAPI.showSnack({ msg: 'Connection failed: ' + e.message, type: 'ERROR' }); } catch(_) {}
+      dbg('Jira test ERROR: ' + e.message, 'error');
+    }
+    btn.textContent = 'Test connection';
+    btn.disabled = false;
+  });
+  document.getElementById('close-cfg').addEventListener('click', function() {
+    document.getElementById('settings-overlay').classList.add('hidden');
+  });
+  document.getElementById('settings-overlay').addEventListener('click', function(e) {
+    if (e.target === document.getElementById('settings-overlay'))
+      document.getElementById('settings-overlay').classList.add('hidden');
+  });
+  // Pin settings — live apply
+  document.querySelectorAll('input[name="pin-layout"], input[name="pin-label"]').forEach(function(r) {
+    r.addEventListener('change', function() {
+      var ps = getPinSettings();
+      var l  = document.querySelector('input[name="pin-layout"]:checked');
+      var lb = document.querySelector('input[name="pin-label"]:checked');
+      if (l)  ps.layout = l.value;
+      if (lb) ps.label  = lb.value;
+      savePinSettings(ps); renderPins();
+    });
+  });
+  // Font size — live apply
+  document.getElementById('sched-fontsize').addEventListener('change', function() {
+    var ss = getSchedSettings();
+    ss.fontSize = parseInt(this.value);
+    saveSchedSettings(ss);
+    applySchedFontSize(ss.fontSize);
+  });
+
+  // Zoom buttons
+  document.getElementById('zoom-in').addEventListener('click', function() {
+    var ss = getSchedSettings();
+    if (ss.zoomIdx < ZOOM_LEVELS.length - 1) { ss.zoomIdx++; saveSchedSettings(ss); safeRenderSchedule(); updateZoomLabel(); }
+  });
+  document.getElementById('zoom-out').addEventListener('click', function() {
+    var ss = getSchedSettings();
+    if (ss.zoomIdx > 0) { ss.zoomIdx--; saveSchedSettings(ss); safeRenderSchedule(); updateZoomLabel(); }
+  });
+
+  // Panel resize
+  var resizeHandle = document.getElementById('sched-resize-handle');
+  var rightPanel   = document.getElementById('right-panel');
+  resizeHandle.addEventListener('mousedown', function(e) {
+    e.preventDefault();
+    var startX     = e.clientX;
+    var startWidth = rightPanel.offsetWidth;
+    resizeHandle.classList.add('resizing');
+    function onMove(me) {
+      rightPanel.style.width = Math.max(160, Math.min(560, startWidth - (me.clientX - startX))) + 'px';
+    }
+    function onUp() {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      resizeHandle.classList.remove('resizing');
+      var ss = getSchedSettings(); ss.panelWidth = rightPanel.offsetWidth; saveSchedSettings(ss);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  // Apply saved schedule settings on load
+  (function() {
+    var ss = getSchedSettings();
+    if (ss.panelWidth) rightPanel.style.width = ss.panelWidth + 'px';
+    applySchedFontSize(ss.fontSize);
+    updateZoomLabel();
+  })();
+
+  // Pin search
+  document.getElementById('add-pin-btn').addEventListener('click', function() {
+    document.getElementById('pin-search-input').value = '';
+    renderPinSearch('');
+    document.getElementById('pin-overlay').classList.remove('hidden');
+    document.getElementById('pin-search-input').focus();
+  });
+  document.getElementById('close-pin').addEventListener('click', function() {
+    document.getElementById('pin-overlay').classList.add('hidden');
+  });
+  document.getElementById('pin-overlay').addEventListener('click', function(e) {
+    if (e.target === document.getElementById('pin-overlay'))
+      document.getElementById('pin-overlay').classList.add('hidden');
+  });
+  document.getElementById('pin-search-input').addEventListener('input', function(e) { renderPinSearch(e.target.value); });
+
+  // ── Register SP hooks (must run after PluginAPI is available) ──
+  try {
+    PluginAPI.registerHook(PluginAPI.Hooks.PERSISTED_DATA_CHANGED, async function() {
+      dbg('HOOK: PERSISTED_DATA_CHANGED');
+      await loadStore();
+      var s = store['timer-state'];
+      if (s && s.running && s.taskId && !timer.running) {
+        Object.assign(timer, s);
+        applyTimerUI();
+        clearInterval(timerInterval);
+        timerInterval = setInterval(tickTimer, 1000);
+        tickTimer();
+      } else if ((!s || !s.running) && timer.running) {
+        clearInterval(timerInterval); timerInterval = null;
+        Object.assign(timer, { running: false, taskId: null, taskTitle: null, jiraId: null, startTs: null, entryId: null });
+        document.getElementById('timer-display').textContent = '00:00:00';
+        document.getElementById('timer-display').classList.remove('running');
+        document.getElementById('start-time-input').value = '';
+        var b2 = document.getElementById('start-stop-btn');
+        b2.textContent = '▶ Start'; b2.classList.remove('btn-stop'); b2.classList.add('btn-primary');
+        document.getElementById('status-bar').classList.add('hidden');
+      }
+      renderTodayTasks(); renderTimeline(); renderPins(); updateTotal();
+    });
+    dbg('PERSISTED_DATA_CHANGED hook registered', 'ok');
+
+    PluginAPI.registerHook(PluginAPI.Hooks.ACTION, function(action) {
+      var atype = action && action.type ? action.type : '?';
+      if (!_spActionTypes.has(atype)) {
+        _spActionTypes.add(atype);
+        dbg('SP ACTION (new): ' + atype + (action.id ? ' id=' + action.id : ''), 'warn');
+      }
+      try {
+        PluginAPI.getTasks().then(function(t) {
+          if (Array.isArray(t) && t.length > 0) {
+            var prev = allTasks.length;
+            allTasks = t;
+            if (allTasks.length !== prev) { renderTodayTasks(); renderPins(); }
+          }
+        }).catch(function() {});
+      } catch(_) {}
+    });
+    dbg('ACTION hook registered', 'ok');
+
+    PluginAPI.registerHook(PluginAPI.Hooks.CURRENT_TASK_CHANGE, function(payload) {
+      if (_syncingToSP) return;
+      var current = payload && payload.current;
+      if (current && (!timer.running || timer.taskId !== current.id)) {
+        var jira = taskJiraId(current);
+        startTimer(current.id, current.title, jira);
+        dbg('HOOK: CURRENT_TASK_CHANGE → start "' + current.title + '"', 'ok');
+      } else if (!current && timer.running) {
+        stopTimer(true);
+        dbg('HOOK: CURRENT_TASK_CHANGE → stop timer', 'ok');
+      }
+    });
+    dbg('CURRENT_TASK_CHANGE hook registered', 'ok');
+  } catch(e) {
+    dbg('Hook registration ERROR: ' + e.message, 'error');
+  }
+
+  dbg('init() complete', 'ok');
+}
+
+// ── Wait for PluginAPI to be injected by SP, then init ──
+// SP injects PluginAPI into the iframe window asynchronously after load.
+// We poll window.PluginAPI (safe — never throws for missing window props).
+var _initDone = false;
+var _syncingToSP = false;
+function safeInit() {
+  if (_initDone) return;
+  _initDone = true;
+  dbg('safeInit() — PluginAPI now available', 'ok');
+  init().catch(function(e) { dbg('init() CRASH: ' + e.message, 'error'); });
+}
+
+var _pollCount = 0;
+var _poll = setInterval(function() {
+  _pollCount++;
+  if (typeof window.PluginAPI !== 'undefined') {
+    clearInterval(_poll);
+    dbg('PluginAPI injected after ~' + (_pollCount * 50) + 'ms', 'ok');
+    // Register onReady AND call directly in case ready already fired
+    try { window.PluginAPI.onReady(safeInit); } catch(_) {}
+    setTimeout(safeInit, 200); // fallback if onReady never fires
+  } else if (_pollCount >= 200) { // 10s hard timeout
+    clearInterval(_poll);
+    dbg('PluginAPI NEVER arrived (10s timeout) — cannot init', 'error');
+  } else if (_pollCount === 1 || _pollCount % 20 === 0) {
+    dbg('Waiting for PluginAPI... (' + (_pollCount * 50) + 'ms)', 'warn');
+  }
+}, 50);
+</script>
+</body>
+</html>
