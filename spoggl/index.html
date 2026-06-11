@@ -1,10 +1,10 @@
+<!-- GENERATED — do not edit directly. Edit src/ files, then run: node build.js -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Spoggl</title>
-<style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<style>*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
 body {
   font-family: var(--font-primary-stack, sans-serif);
@@ -644,8 +644,7 @@ html.dark .sched-entry-block.st-error  .sched-handle::after { background: #f38ba
   </div>
 </div>
 
-<script>
-// ─────────────────────────────────────────
+<script>// ─────────────────────────────────────────
 // UTILS
 // ─────────────────────────────────────────
 
@@ -863,6 +862,7 @@ function applyTheme() {
   dbg('Theme: ' + (dark ? 'dark' : 'light'), 'ok');
 }
 
+
 // ─────────────────────────────────────────
 // STATE
 // ─────────────────────────────────────────
@@ -968,6 +968,7 @@ function getSchedSettings() { return Object.assign({ zoomIdx: 2, fontSize: 9, pa
 function saveSchedSettings(s) { store['sched-settings'] = s; scheduleSave(); }
 function currentPxPerMin() { var ss = getSchedSettings(); return PX_PER_MIN_BASE * ZOOM_LEVELS[ss.zoomIdx]; }
 
+
 // ─────────────────────────────────────────
 // TIMER
 // ─────────────────────────────────────────
@@ -1072,6 +1073,7 @@ function tickTimer() {
   schedTickCount++;
   if (schedTickCount % 40 === 0) updateSchedNow();
 }
+
 
 // ─────────────────────────────────────────
 // MERGE LOGIC
@@ -1279,6 +1281,7 @@ function handleEntryAction(e) {
   }
 }
 
+
 // ─────────────────────────────────────────
 // DAY PICKER
 // ─────────────────────────────────────────
@@ -1473,6 +1476,7 @@ function renderTodayTasks() {
   if (inboxList.length > 0) makeSection('Other Tasks', inboxList.slice(0, 30), 'other');
 }
 
+
 // ─────────────────────────────────────────
 // PINNED TASKS
 // ─────────────────────────────────────────
@@ -1573,6 +1577,7 @@ function renderPinSearch(q) {
     container.appendChild(div);
   });
 }
+
 
 // ─────────────────────────────────────────
 // SCHEDULE VIEW (right panel)
@@ -1996,6 +2001,7 @@ function schedScrollToNow() {
   panel.scrollTop = Math.max(0, nowMin * schedState.pxPerMin - panel.clientHeight / 3);
 }
 
+
 // ─────────────────────────────────────────
 // JIRA SYNC
 // ─────────────────────────────────────────
@@ -2070,6 +2076,7 @@ async function finishDay() {
   }
 }
 
+
 // ─────────────────────────────────────────
 // TASKS LOADER (non-blocking, with timeout)
 // ─────────────────────────────────────────
@@ -2120,10 +2127,6 @@ function loadTasks() {
     done([], 'error');
   }
 }
-
-// ─────────────────────────────────────────
-// HOOKS — registered inside init() after PluginAPI is available
-// ─────────────────────────────────────────
 
 // ─────────────────────────────────────────
 // INIT

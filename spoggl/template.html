@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Spoggl</title>
+<style>/* STYLE */</style>
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- ── LEFT PANEL ── -->
+  <div class="left-panel">
+
+    <!-- Omnibar -->
+    <div class="omnibar">
+      <div class="omnibar-row">
+        <div class="task-search-wrap">
+          <input id="task-input" type="text" placeholder="Search or select task…" autocomplete="off">
+          <div id="task-dropdown" class="task-dropdown hidden"></div>
+        </div>
+        <input id="start-time-input" class="start-time-input" type="text" placeholder="--:--" maxlength="5">
+        <div id="timer-display">00:00:00</div>
+        <button id="start-stop-btn" class="btn-primary">▶ Start</button>
+      </div>
+    </div>
+
+    <!-- Status bar (visible while timer runs) -->
+    <div id="status-bar" class="status-bar hidden">
+      <label>Task status:</label>
+      <select id="status-select" style="font-size:13px;">
+        <option value="">Don't change</option>
+      </select>
+    </div>
+
+    <!-- Day header -->
+    <div class="day-header">
+      <div class="day-picker">
+        <button id="prev-day" class="nav-btn" title="Previous day">‹</button>
+        <span id="current-date-label">---</span>
+        <button id="next-day" class="nav-btn" title="Next day">›</button>
+        <button id="today-btn" class="btn-outline">Today</button>
+      </div>
+      <div class="day-header-right">
+        <span id="total-display" class="total-display">Total: 0m</span>
+        <button id="finish-day-btn" class="btn-primary">Finish Day</button>
+        <button id="settings-btn" title="Jira settings" style="font-size:16px;padding:4px 8px;background:none;border:1px solid #e0e0e0;border-radius:4px;cursor:pointer;">⚙</button>
+      </div>
+    </div>
+
+    <!-- Pins bar -->
+    <div class="pins-bar">
+      <span class="pins-label">Pins:</span>
+      <div id="pin-chips"></div>
+      <button id="add-pin-btn" class="add-pin-btn">+ Pin task</button>
+    </div>
+
+    <!-- Timeline (logged entries for selected day) -->
+    <div id="timeline"></div>
+
+    <!-- Debug panel -->
+    <div class="dbg-panel" id="dbg-panel">
+      <div class="dbg-bar" id="dbg-bar">
+        <span class="dbg-bar-title">🐛 Debug</span>
+        <span class="dbg-bar-count" id="dbg-count">0</span>
+        <button class="dbg-btn" id="dbg-state-btn">State</button>
+        <button class="dbg-btn" id="dbg-copy-btn">Copy</button>
+        <button class="dbg-btn" id="dbg-clear-btn">Clear</button>
+        <span style="color:#666;font-size:10px;" id="dbg-toggle-lbl">▼</span>
+      </div>
+      <div class="dbg-log" id="dbg-log">
+        <div class="dbg-empty">Waiting for init…</div>
+      </div>
+    </div>
+
+    <!-- Today & Inbox quick-start (below logged entries) -->
+    <div class="today-tasks">
+      <div class="today-tasks-hdr" id="today-tasks-toggle">
+        <span>Tasks — Today &amp; Other</span>
+        <span class="tt-count" id="today-tasks-count">…</span>
+      </div>
+      <div class="today-task-list" id="today-task-list">
+        <div style="padding:12px;text-align:center;font-size:13px;color:#9e9e9e">Loading…</div>
+      </div>
+    </div>
+
+  </div><!-- /left-panel -->
+
+  <!-- ── RIGHT PANEL: visual day schedule ── -->
+  <div class="right-panel" id="right-panel">
+    <div class="sched-resize-handle" id="sched-resize-handle"></div>
+    <div class="sched-hdr">
+      <span>Day View — <span id="sched-date-label"></span></span>
+      <div class="sched-zoom">
+        <button class="sched-zoom-btn" id="zoom-out" title="Zoom out">−</button>
+        <span class="sched-zoom-lbl" id="zoom-lbl">1×</span>
+        <button class="sched-zoom-btn" id="zoom-in" title="Zoom in">+</button>
+      </div>
+    </div>
+    <div class="schedule-grid" id="schedule-grid"></div>
+  </div>
+
+</div><!-- /app-layout -->
+
+<!-- Right-click context menu -->
+<div id="ctx-menu" class="ctx-menu hidden"></div>
+
+<!-- Settings overlay -->
+<div id="settings-overlay" class="overlay hidden">
+  <div class="panel" style="max-width:380px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <h2 style="margin:0">Settings</h2>
+      <button id="close-cfg" class="btn-outline" style="padding:4px 12px">Close</button>
+    </div>
+
+    <!-- Pinned Tasks -->
+    <div class="settings-section">
+      <div class="settings-section-title">Pinned Tasks — Layout</div>
+      <div class="radio-group horiz">
+        <label class="radio-lbl"><input type="radio" name="pin-layout" id="pin-layout-compact" value="compact"> Compact chips</label>
+        <label class="radio-lbl"><input type="radio" name="pin-layout" id="pin-layout-stacked" value="stacked"> Stacked list</label>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">Pinned Tasks — Label</div>
+      <div class="radio-group">
+        <label class="radio-lbl"><input type="radio" name="pin-label" id="pin-label-tag" value="tag"> Tag / Jira ID only</label>
+        <label class="radio-lbl"><input type="radio" name="pin-label" id="pin-label-tagname" value="tagname"> Tag + full task name</label>
+        <label class="radio-lbl"><input type="radio" name="pin-label" id="pin-label-name" value="name"> Task name only</label>
+      </div>
+    </div>
+
+    <!-- Day View -->
+    <div class="settings-section">
+      <div class="settings-section-title">Day View</div>
+      <div class="settings-row">
+        <label>Font size</label>
+        <select id="sched-fontsize">
+          <option value="8">8px</option>
+          <option value="9" selected>9px (default)</option>
+          <option value="10">10px</option>
+          <option value="11">11px</option>
+          <option value="12">12px</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Jira -->
+    <div class="settings-section" style="margin-bottom:0">
+      <div class="settings-section-title">Jira Worklog</div>
+      <div class="form-row">
+        <label>Base URL</label>
+        <input id="cfg-url" type="text" placeholder="https://yourcompany.atlassian.net">
+      </div>
+      <div class="form-row">
+        <label>Email</label>
+        <input id="cfg-email" type="email" placeholder="user@company.com">
+      </div>
+      <div class="form-row">
+        <label>API Token</label>
+        <input id="cfg-token" type="password" placeholder="Jira API token">
+      </div>
+      <div style="display:flex;gap:6px;margin-top:6px">
+        <button id="save-cfg" class="btn-primary" style="flex:1">Save</button>
+        <button id="jira-detect-btn" class="btn-outline" style="flex:1">Auto-detect from SP</button>
+        <button id="jira-test-btn" class="btn-outline" style="flex:1">Test connection</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Pin search overlay -->
+<div id="pin-overlay" class="overlay hidden">
+  <div class="panel">
+    <h2>Pin Task</h2>
+    <div class="form-row">
+      <input id="pin-search-input" type="text" placeholder="Search task…" autocomplete="off">
+    </div>
+    <div id="pin-results" class="pin-results"></div>
+    <div class="row-btns">
+      <button id="close-pin" class="btn-outline">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>/* SCRIPT */</script>
+</body>
+</html>
