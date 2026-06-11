@@ -33,7 +33,7 @@ async function finishDay() {
   for (var i = 0; i < pending.length; i++) {
     var entry = pending[i];
     try {
-      var res = await fetch(cfg.baseUrl + '/rest/api/2/issue/' + entry.jiraId + '/worklog', {
+      var res = await fetch(cfg.baseUrl + '/rest/api/3/issue/' + entry.jiraId + '/worklog', {
         method: 'POST',
         headers: { 'Authorization': authHeader, 'Content-Type': 'application/json' },
         body: JSON.stringify({

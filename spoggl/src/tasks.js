@@ -30,7 +30,8 @@ function selectDate(dateStr) {
 // ─────────────────────────────────────────
 
 function taskJiraId(task) {
-  return (task.issueData && task.issueData.key) || task.issueKey || task.externalId || null;
+  return (task.issueData && (task.issueData.key || task.issueData.issueKey)) ||
+         task.issueKey || task.externalId || task.issueId || null;
 }
 
 function searchTasks(q) {
@@ -41,21 +42,64 @@ function searchTasks(q) {
   }).slice(0, 15);
 }
 
+var _jiraSearchTimer = null;
+function searchJira(q, callback) {
+  clearTimeout(_jiraSearchTimer);
+  if (!q || q.trim().length < 2) { callback([]); return; }
+  var cfg = getJiraCfg();
+  if (!cfg || !cfg.baseUrl) { callback([]); return; }
+  _jiraSearchTimer = setTimeout(function() {
+    var url = cfg.baseUrl + '/rest/api/3/issue/picker?query=' + encodeURIComponent(q.trim()) +
+              '&showSubTasks=true&showSubTaskParent=true';
+    fetch(url, { headers: { 'Authorization': 'Basic ' + btoa(cfg.email + ':' + cfg.apiToken) } })
+      .then(function(r) { return r.ok ? r.json() : { sections: [] }; })
+      .then(function(data) {
+        var issues = [];
+        (data.sections || []).forEach(function(s) {
+          (s.issues || []).forEach(function(i) {
+            issues.push({ key: i.key, summary: i.summaryText || i.key });
+          });
+        });
+        var spKeys = new Set(allTasks.map(function(t) { return taskJiraId(t); }).filter(Boolean));
+        callback(issues.filter(function(i) { return !spKeys.has(i.key); }).slice(0, 8));
+      })
+      .catch(function() { callback([]); });
+  }, 300);
+}
+
 var selectedTask = null;
 
-function showDropdown(items) {
+function showDropdown(spItems, jiraItems) {
   var dd = document.getElementById('task-dropdown');
-  if (!items || items.length === 0) { dd.classList.add('hidden'); return; }
+  spItems  = spItems  || [];
+  jiraItems = jiraItems || [];
+  if (spItems.length === 0 && jiraItems.length === 0) { dd.classList.add('hidden'); return; }
   dd.innerHTML = '';
-  items.forEach(function(task) {
+  spItems.forEach(function(task) {
     var jira = taskJiraId(task);
     var div  = document.createElement('div');
     div.className = 'task-dd-item';
     div.innerHTML = (jira ? '<span class="jira-chip">' + esc(jira) + '</span>' : '') +
                     '<span class="task-dd-title">' + esc(task.title) + '</span>';
-    div.addEventListener('click', function() { pickTask(task); });
+    div.addEventListener('mousedown', function(e) { e.preventDefault(); pickTask(task); });
     dd.appendChild(div);
   });
+  if (jiraItems.length > 0) {
+    if (spItems.length > 0) {
+      var sep = document.createElement('div');
+      sep.className = 'task-dd-sep';
+      sep.textContent = 'From Jira';
+      dd.appendChild(sep);
+    }
+    jiraItems.forEach(function(issue) {
+      var div = document.createElement('div');
+      div.className = 'task-dd-item';
+      div.innerHTML = '<span class="jira-chip">' + esc(issue.key) + '</span>' +
+                      '<span class="task-dd-title">' + esc(issue.summary) + '</span>';
+      div.addEventListener('mousedown', function(e) { e.preventDefault(); pickJiraIssue(issue.key, issue.summary); });
+      dd.appendChild(div);
+    });
+  }
   dd.classList.remove('hidden');
 }
 
@@ -63,6 +107,12 @@ function pickTask(task) {
   selectedTask = task;
   var jira = taskJiraId(task);
   document.getElementById('task-input').value = task.title + (jira ? ' (' + jira + ')' : '');
+  document.getElementById('task-dropdown').classList.add('hidden');
+}
+
+function pickJiraIssue(key, summary) {
+  selectedTask = null;
+  document.getElementById('task-input').value = summary + ' (' + key + ')';
   document.getElementById('task-dropdown').classList.add('hidden');
 }
 
@@ -108,19 +158,31 @@ function renderTodayTasks() {
   var seen   = {};
   groups.todayList.forEach(function(t) { seen[t.id] = true; });
 
-  // "Assigned to me" — Jira issues assigned to current user, not in Today, not done
+  // "Assigned to me" — Jira issues assigned to current user, not already in Today.
+  // Do NOT filter by t.isDone: SP and Jira done-states are independent.
+  // _myJiraKeys already contains only unresolved issues (filtered in JQL).
+  var seenJiraKeys = new Set();
+  allTasks.forEach(function(t) { var k = taskJiraId(t); if (k) seenJiraKeys.add(k); });
+
   var assignedList = allTasks.filter(function(t) {
     var jiraKey = taskJiraId(t) || t.issueId;
-    return jiraKey && _myJiraKeys.has(jiraKey) && !seen[t.id] && !t.isDone;
+    return jiraKey && _myJiraKeys.has(jiraKey) && !seen[t.id];
   });
-  assignedList.forEach(function(t) { seen[t.id] = true; });
+
+  // Jira issues that are not yet imported into SP at all — show directly from Jira API data
+  var jiraOnlyItems = _myJiraIssues
+    .filter(function(i) { return !seenJiraKeys.has(i.key); })
+    .map(function(i) { return { id: 'jira-' + i.key, title: i.summary, issueKey: i.key }; });
+
+  var combinedAssigned = assignedList.concat(jiraOnlyItems);
+  dbg('renderTodayTasks: assignedList=' + assignedList.length + ' jiraOnly=' + jiraOnlyItems.length + ' _myJiraKeys=' + _myJiraKeys.size, 'state');
+  combinedAssigned.forEach(function(t) { seen[t.id] = true; });
 
   // Exclude assigned tasks from Other so there's no duplication
   var inboxList = groups.inboxList.filter(function(t) { return !seen[t.id]; });
 
-  var total = groups.todayList.length + assignedList.length + inboxList.length;
-  var showAll = (total === 0 && allTasks.length > 0);
-  count.textContent = showAll ? allTasks.length : total;
+  var total = groups.todayList.length + combinedAssigned.length + inboxList.length;
+  count.textContent = total > 0 ? total : allTasks.length;
   list.innerHTML = '';
 
   function makeItem(task) {
@@ -158,29 +220,12 @@ function renderTodayTasks() {
     }
   }
 
-  if (showAll) {
-    makeSection('All Tasks', allTasks, 'other');
-    return;
-  }
-
-  if (total === 0 && _myJiraKeys.size === 0) {
-    list.innerHTML = '<div style="padding:12px;text-align:center;font-size:13px;color:#9e9e9e">No tasks in Today or Inbox</div>';
-    return;
-  }
-
   if (groups.todayList.length > 0) makeSection('Today', groups.todayList, 'today');
 
-  // "Assigned to me" section — always shown when Jira configured, even if empty
+  // "Assigned to me" — always render if Jira configured, regardless of other sections
   var cfg = getJiraCfg();
   if (cfg && cfg.baseUrl) {
-    if (assignedList.length > 0) {
-      makeSection('Assigned to me', assignedList, 'assigned');
-    } else {
-      var hdrA = document.createElement('div');
-      hdrA.className = 'tt-section tt-section-toggle';
-      hdrA.innerHTML = '<span class="tt-chevron">&#9660;</span>Assigned to me<span class="tt-section-count">0</span>';
-      list.appendChild(hdrA);
-    }
+    makeSection('Assigned to me', combinedAssigned, 'assigned');
   } else {
     var hdrJ = document.createElement('div');
     hdrJ.className = 'tt-section';
@@ -189,5 +234,13 @@ function renderTodayTasks() {
     list.appendChild(hdrJ);
   }
 
-  if (inboxList.length > 0) makeSection('Other Tasks', inboxList.slice(0, 30), 'other');
+  // Other Tasks: inbox items, or all tasks if nothing else matched
+  var otherList = inboxList.length > 0 ? inboxList.slice(0, 30)
+                : total === 0          ? allTasks.slice(0, 30)
+                : [];
+  if (otherList.length > 0) makeSection('Other Tasks', otherList, 'other');
+
+  if (list.children.length === 0) {
+    list.innerHTML = '<div style="padding:12px;text-align:center;font-size:13px;color:#9e9e9e">No tasks found</div>';
+  }
 }
