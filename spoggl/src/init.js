@@ -233,7 +233,7 @@ async function init() {
     btn.textContent = 'Testing…';
     btn.disabled = true;
     try {
-      var res = await fetch(baseUrl + '/rest/api/2/myself', {
+      var res = await fetch(baseUrl + '/rest/api/3/myself', {
         headers: { 'Authorization': 'Basic ' + btoa(email + ':' + token), 'Content-Type': 'application/json' }
       });
       if (res.ok) {

@@ -61,7 +61,7 @@ async function fetchJiraAssigned() {
   dbg('fetchJiraAssigned: calling ' + cfg.baseUrl + ' as ' + cfg.email, 'info');
   try {
     var jql = 'assignee=currentUser() AND resolution=Unresolved';
-    var url = cfg.baseUrl + '/rest/api/2/search?jql=' + encodeURIComponent(jql) + '&fields=key&maxResults=200';
+    var url = cfg.baseUrl + '/rest/api/3/search/jql?jql=' + encodeURIComponent(jql) + '&fields=key&maxResults=200';
     var res = await fetch(url, {
       headers: { 'Authorization': 'Basic ' + btoa(cfg.email + ':' + cfg.apiToken) }
     });

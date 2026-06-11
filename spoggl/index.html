@@ -948,7 +948,7 @@ async function fetchJiraAssigned() {
   dbg('fetchJiraAssigned: calling ' + cfg.baseUrl + ' as ' + cfg.email, 'info');
   try {
     var jql = 'assignee=currentUser() AND resolution=Unresolved';
-    var url = cfg.baseUrl + '/rest/api/2/search?jql=' + encodeURIComponent(jql) + '&fields=key&maxResults=200';
+    var url = cfg.baseUrl + '/rest/api/3/search/jql?jql=' + encodeURIComponent(jql) + '&fields=key&maxResults=200';
     var res = await fetch(url, {
       headers: { 'Authorization': 'Basic ' + btoa(cfg.email + ':' + cfg.apiToken) }
     });
@@ -2175,7 +2175,7 @@ async function finishDay() {
   for (var i = 0; i < pending.length; i++) {
     var entry = pending[i];
     try {
-      var res = await fetch(cfg.baseUrl + '/rest/api/2/issue/' + entry.jiraId + '/worklog', {
+      var res = await fetch(cfg.baseUrl + '/rest/api/3/issue/' + entry.jiraId + '/worklog', {
         method: 'POST',
         headers: { 'Authorization': authHeader, 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2449,7 +2449,7 @@ async function init() {
     btn.textContent = 'Testing…';
     btn.disabled = true;
     try {
-      var res = await fetch(baseUrl + '/rest/api/2/myself', {
+      var res = await fetch(baseUrl + '/rest/api/3/myself', {
         headers: { 'Authorization': 'Basic ' + btoa(email + ':' + token), 'Content-Type': 'application/json' }
       });
       if (res.ok) {
