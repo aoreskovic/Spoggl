@@ -42,21 +42,64 @@ function searchTasks(q) {
   }).slice(0, 15);
 }
 
+var _jiraSearchTimer = null;
+function searchJira(q, callback) {
+  clearTimeout(_jiraSearchTimer);
+  if (!q || q.trim().length < 2) { callback([]); return; }
+  var cfg = getJiraCfg();
+  if (!cfg || !cfg.baseUrl) { callback([]); return; }
+  _jiraSearchTimer = setTimeout(function() {
+    var url = cfg.baseUrl + '/rest/api/3/issue/picker?query=' + encodeURIComponent(q.trim()) +
+              '&showSubTasks=true&showSubTaskParent=true';
+    fetch(url, { headers: { 'Authorization': 'Basic ' + btoa(cfg.email + ':' + cfg.apiToken) } })
+      .then(function(r) { return r.ok ? r.json() : { sections: [] }; })
+      .then(function(data) {
+        var issues = [];
+        (data.sections || []).forEach(function(s) {
+          (s.issues || []).forEach(function(i) {
+            issues.push({ key: i.key, summary: i.summaryText || i.key });
+          });
+        });
+        var spKeys = new Set(allTasks.map(function(t) { return taskJiraId(t); }).filter(Boolean));
+        callback(issues.filter(function(i) { return !spKeys.has(i.key); }).slice(0, 8));
+      })
+      .catch(function() { callback([]); });
+  }, 300);
+}
+
 var selectedTask = null;
 
-function showDropdown(items) {
+function showDropdown(spItems, jiraItems) {
   var dd = document.getElementById('task-dropdown');
-  if (!items || items.length === 0) { dd.classList.add('hidden'); return; }
+  spItems  = spItems  || [];
+  jiraItems = jiraItems || [];
+  if (spItems.length === 0 && jiraItems.length === 0) { dd.classList.add('hidden'); return; }
   dd.innerHTML = '';
-  items.forEach(function(task) {
+  spItems.forEach(function(task) {
     var jira = taskJiraId(task);
     var div  = document.createElement('div');
     div.className = 'task-dd-item';
     div.innerHTML = (jira ? '<span class="jira-chip">' + esc(jira) + '</span>' : '') +
                     '<span class="task-dd-title">' + esc(task.title) + '</span>';
-    div.addEventListener('click', function() { pickTask(task); });
+    div.addEventListener('mousedown', function(e) { e.preventDefault(); pickTask(task); });
     dd.appendChild(div);
   });
+  if (jiraItems.length > 0) {
+    if (spItems.length > 0) {
+      var sep = document.createElement('div');
+      sep.className = 'task-dd-sep';
+      sep.textContent = 'From Jira';
+      dd.appendChild(sep);
+    }
+    jiraItems.forEach(function(issue) {
+      var div = document.createElement('div');
+      div.className = 'task-dd-item';
+      div.innerHTML = '<span class="jira-chip">' + esc(issue.key) + '</span>' +
+                      '<span class="task-dd-title">' + esc(issue.summary) + '</span>';
+      div.addEventListener('mousedown', function(e) { e.preventDefault(); pickJiraIssue(issue.key, issue.summary); });
+      dd.appendChild(div);
+    });
+  }
   dd.classList.remove('hidden');
 }
 
@@ -64,6 +107,12 @@ function pickTask(task) {
   selectedTask = task;
   var jira = taskJiraId(task);
   document.getElementById('task-input').value = task.title + (jira ? ' (' + jira + ')' : '');
+  document.getElementById('task-dropdown').classList.add('hidden');
+}
+
+function pickJiraIssue(key, summary) {
+  selectedTask = null;
+  document.getElementById('task-input').value = summary + ' (' + key + ')';
   document.getElementById('task-dropdown').classList.add('hidden');
 }
 
@@ -112,17 +161,27 @@ function renderTodayTasks() {
   // "Assigned to me" — Jira issues assigned to current user, not already in Today.
   // Do NOT filter by t.isDone: SP and Jira done-states are independent.
   // _myJiraKeys already contains only unresolved issues (filtered in JQL).
+  var seenJiraKeys = new Set();
+  allTasks.forEach(function(t) { var k = taskJiraId(t); if (k) seenJiraKeys.add(k); });
+
   var assignedList = allTasks.filter(function(t) {
     var jiraKey = taskJiraId(t) || t.issueId;
     return jiraKey && _myJiraKeys.has(jiraKey) && !seen[t.id];
   });
-  dbg('renderTodayTasks: assignedList=' + assignedList.length + ' _myJiraKeys=' + _myJiraKeys.size, 'state');
-  assignedList.forEach(function(t) { seen[t.id] = true; });
+
+  // Jira issues that are not yet imported into SP at all — show directly from Jira API data
+  var jiraOnlyItems = _myJiraIssues
+    .filter(function(i) { return !seenJiraKeys.has(i.key); })
+    .map(function(i) { return { id: 'jira-' + i.key, title: i.summary, issueKey: i.key }; });
+
+  var combinedAssigned = assignedList.concat(jiraOnlyItems);
+  dbg('renderTodayTasks: assignedList=' + assignedList.length + ' jiraOnly=' + jiraOnlyItems.length + ' _myJiraKeys=' + _myJiraKeys.size, 'state');
+  combinedAssigned.forEach(function(t) { seen[t.id] = true; });
 
   // Exclude assigned tasks from Other so there's no duplication
   var inboxList = groups.inboxList.filter(function(t) { return !seen[t.id]; });
 
-  var total = groups.todayList.length + assignedList.length + inboxList.length;
+  var total = groups.todayList.length + combinedAssigned.length + inboxList.length;
   count.textContent = total > 0 ? total : allTasks.length;
   list.innerHTML = '';
 
@@ -166,7 +225,7 @@ function renderTodayTasks() {
   // "Assigned to me" — always render if Jira configured, regardless of other sections
   var cfg = getJiraCfg();
   if (cfg && cfg.baseUrl) {
-    makeSection('Assigned to me', assignedList, 'assigned');
+    makeSection('Assigned to me', combinedAssigned, 'assigned');
   } else {
     var hdrJ = document.createElement('div');
     hdrJ.className = 'tt-section';

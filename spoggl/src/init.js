@@ -115,12 +115,19 @@ async function init() {
   // ── Event listeners ──
 
   var taskInp = document.getElementById('task-input');
+  var _jiraDropItems = [];
   taskInp.addEventListener('input', function() {
     selectedTask = null;
-    showDropdown(searchTasks(taskInp.value));
+    var spItems = searchTasks(taskInp.value);
+    showDropdown(spItems, _jiraDropItems);
+    searchJira(taskInp.value, function(jiraItems) {
+      _jiraDropItems = jiraItems;
+      if (document.activeElement === taskInp)
+        showDropdown(searchTasks(taskInp.value), _jiraDropItems);
+    });
   });
   taskInp.addEventListener('focus', function() {
-    if (!timer.running) showDropdown(searchTasks(taskInp.value));
+    if (!timer.running) { _jiraDropItems = []; showDropdown(searchTasks(taskInp.value), []); }
   });
   document.addEventListener('click', function(e) {
     if (!e.target.closest('.task-search-wrap'))

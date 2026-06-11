@@ -22,20 +22,23 @@ const JS_FILES = [
   'init.js',
 ];
 
-function stripCssComments(src) {
-  // Remove /* ... */ block comments
-  return src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\n{3,}/g, '\n\n');
+function minifyCss(src) {
+  return src
+    .replace(/\/\*[\s\S]*?\*\//g, '')          // block comments
+    .replace(/[ \t]+/g, ' ')                   // collapse horizontal whitespace
+    .replace(/\s*([{}:;,>~])\s*/g, '$1')       // remove spaces around CSS operators
+    .replace(/;}/g, '}')                       // trailing semicolon before }
+    .replace(/\n/g, '')                        // remove newlines
+    .trim();
 }
 
 function stripJsComments(src) {
-  // Remove lines that are purely a comment (// ...) — preserves inline trailing comments
-  // and never touches strings or regex by only matching full lines
   return src
-    .replace(/^[ \t]*\/\/.*$/gm, '')
-    .replace(/\n{3,}/g, '\n\n');
+    .replace(/^[ \t]*\/\/.*$/gm, '')           // full-line // comments
+    .replace(/\n{2,}/g, '\n');                 // collapse blank lines
 }
 
-const css  = stripCssComments(fs.readFileSync(path.join(srcDir, 'style.css'), 'utf8'));
+const css  = minifyCss(fs.readFileSync(path.join(srcDir, 'style.css'), 'utf8'));
 const js   = stripJsComments(JS_FILES.map(f => fs.readFileSync(path.join(srcDir, f), 'utf8')).join('\n\n'));
 const tmpl = fs.readFileSync(path.join(__dirname, 'template.html'), 'utf8');
 

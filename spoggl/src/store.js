@@ -49,7 +49,8 @@ function savePinned(ids) { store['pinned-tasks'] = ids; scheduleSave(); }
 function getJiraCfg() { return store['jira-config'] || null; }
 function saveJiraCfg(cfg) { store['jira-config'] = cfg; scheduleSave(true); }
 
-var _myJiraKeys = new Set();
+var _myJiraIssues = []; // [{key, summary}] — full Jira issues assigned to me
+var _myJiraKeys = new Set(); // for O(1) membership check
 var _sectionCollapsed = { today: false, assigned: false, other: false };
 
 async function fetchJiraAssigned() {
@@ -61,7 +62,7 @@ async function fetchJiraAssigned() {
   dbg('fetchJiraAssigned: calling ' + cfg.baseUrl + ' as ' + cfg.email, 'info');
   try {
     var jql = 'assignee=currentUser() AND resolution=Unresolved';
-    var url = cfg.baseUrl + '/rest/api/3/search/jql?jql=' + encodeURIComponent(jql) + '&fields=key&maxResults=200';
+    var url = cfg.baseUrl + '/rest/api/3/search/jql?jql=' + encodeURIComponent(jql) + '&fields=key,summary&maxResults=200';
     var res = await fetch(url, {
       headers: { 'Authorization': 'Basic ' + btoa(cfg.email + ':' + cfg.apiToken) }
     });
@@ -71,7 +72,10 @@ async function fetchJiraAssigned() {
       return;
     }
     var data = await res.json();
-    _myJiraKeys = new Set((data.issues || []).map(function(i) { return i.key; }));
+    _myJiraIssues = (data.issues || []).map(function(i) {
+      return { key: i.key, summary: (i.fields && i.fields.summary) || i.key };
+    });
+    _myJiraKeys = new Set(_myJiraIssues.map(function(i) { return i.key; }));
     dbg('fetchJiraAssigned: ' + _myJiraKeys.size + ' issues assigned to me (total in Jira: ' + (data.total || '?') + ')', 'ok');
     renderTodayTasks();
   } catch(e) { dbg('fetchJiraAssigned error: ' + e.message, 'error'); }
