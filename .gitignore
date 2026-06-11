@@ -3,6 +3,7 @@ super-productivity-master/
 
 # Plugin build artifacts
 spoggl/*.zip
+spoggl.zip
 
 # OS & editor
 .DS_Store
